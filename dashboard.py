@@ -5,14 +5,17 @@ import streamlit as st
 import pandas as pd
 from pyunpack import Archive
 
-
+ROOT = os.path.dirname(__file__)
 DATE_FORMAT = '%m/%d/%Y'
 PLAYERS_DATA_PATH = os.path.join('data', 'players') 
-PLAYER_BOXSCORE_PATH = os.path.join(PLAYERS_DATA_PATH, 'players-boxscores.csv') 
-FILE_TO_DECOMPRESS = os.path.join(PLAYERS_DATA_PATH, 'players.7z') 
+PLAYER_BOXSCORE_PATH = os.path.join(ROOT, PLAYERS_DATA_PATH, 'players-boxscores.csv') 
+FILE_TO_DECOMPRESS = os.path.join(ROOT, PLAYERS_DATA_PATH, 'players.7z') 
 
-if not os.path.isfile(PLAYER_BOXSCORE_PATH):
-    Archive(FILE_TO_DECOMPRESS).extractall(os.path.join('data', 'players'))
+def uncompress_file():
+    if not os.path.isfile(PLAYER_BOXSCORE_PATH):
+        Archive(FILE_TO_DECOMPRESS).extractall(os.path.join(ROOT, 'data', 'players'))
+
+uncompress_file()
 
 #Players Data
 boxscore = pd.read_csv(PLAYER_BOXSCORE_PATH, sep=';', index_col=False)

@@ -67,6 +67,8 @@ def setup():
         'A Web App by [Gérard LEMOING]')
 
     if select_display == 'Dashboard':
+        #Check if file exists
+        dashboard.uncompress_file()
         player, number_of_game= dashboard.dashboard_first_row()
         dashboard.dashboard_second_row(player, number_of_game)
     elif select_display == 'Raw data profiling':
