@@ -5,11 +5,7 @@ from datetime import datetime
 import streamlit as st
 import pandas as pd
 
-ROOT = os.path.dirname(__file__)
-DATE_FORMAT = '%m/%d/%Y'
-PLAYERS_DATA_PATH = os.path.join(ROOT, 'data', 'players') 
-PLAYER_BOXSCORE_PATH = os.path.join(ROOT, PLAYERS_DATA_PATH, 'players-boxscores.csv') 
-FILE_GZ_TO_DECOMPRESS = os.path.join(ROOT, PLAYERS_DATA_PATH, 'players.tar.gz') 
+from constants import *
 
 def uncompress_file():
     if not os.path.isfile(PLAYER_BOXSCORE_PATH):

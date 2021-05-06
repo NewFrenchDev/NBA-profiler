@@ -3,20 +3,56 @@ import pandas as pd
 import numpy as np
 import plotly.express as px 
 
-@st.cache
+from constants import *
+
+
+FILES_DISPLAYED = ('Players boxscore', 'Players boxscore advanced',
+                   'Players boxscore scoring', 'Player boxscore traditional')
+FILES_PATH = {
+    'Players boxscore': PLAYER_BOXSCORE_PATH,
+    'Players boxscore advanced': PLAYER_BOXSCORE_ADVANCED_PATH,
+    'Players boxscore scoring': PLAYER_BOXSCORE_SCORING_PATH,
+    'Players boxscore traditional': PLAYER_BOXSCORE_TRADITIONAL_PATH
+}
+
+#Players Data
+boxscore = pd.read_csv(PLAYER_BOXSCORE_PATH, sep=';', index_col=False)
+
+@st.cache()
 def load_csv(uploaded_file):
-    csv = pd.read_csv(uploaded_file)
+    csv = pd.read_csv(uploaded_file, sep=';')
     return csv
 
 def display():
+
+    #Files user can used 
+    selected_file = st.sidebar.radio('Files', FILES_DISPLAYED)
+    print(selected_file)
+
     #Upload dataset
     uploaded_file = st.sidebar.file_uploader('Upload your input CSV file', type=["csv"])
 
+    # if selected_file == 'Players boxscore' and uploaded_file is None:
+    #     dataframe_reduced = boxscore.iloc[:10000]
+    #     st.dataframe(dataframe_reduced)
+    # elif selected_file == 'Players boxscore' and uploaded_file is None:
+    #     dataframe_reduced = boxscore_advanced.iloc[:10000]
+    #     st.dataframe(dataframe_reduced)
+    # if selected_file == 'Players boxscore' and uploaded_file is None:
+    #     dataframe_reduced = boxscore.iloc[:10000]
+    #     st.dataframe(dataframe_reduced)
+    # if selected_file == 'Players boxscore' and uploaded_file is None:
+    #     dataframe_reduced = boxscore.iloc[:10000]
+    #     st.dataframe(dataframe_reduced)
+
     if uploaded_file is not None:
         dataframe_to_load = load_csv(uploaded_file)
+    
+        if len(dataframe_to_load) > 20000:
+            dataframe_to_load = dataframe_to_load.sample(n=20000, random_state=200)
 
         st.header('**Input DataFrame**')
-        st.dataframe(dataframe_to_load)
+        st.write(dataframe_to_load)
         st.write('---')
         st.header('**Pandas Profiling Report**')
         st.write(' ')
