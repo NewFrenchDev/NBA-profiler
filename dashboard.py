@@ -1,19 +1,19 @@
 import os
+import shutil
 from datetime import datetime
 
 import streamlit as st
 import pandas as pd
-from pyunpack import Archive
 
 ROOT = os.path.dirname(__file__)
 DATE_FORMAT = '%m/%d/%Y'
-PLAYERS_DATA_PATH = os.path.join('data', 'players') 
+PLAYERS_DATA_PATH = os.path.join(ROOT, 'data', 'players') 
 PLAYER_BOXSCORE_PATH = os.path.join(ROOT, PLAYERS_DATA_PATH, 'players-boxscores.csv') 
-FILE_TO_DECOMPRESS = os.path.join(ROOT, PLAYERS_DATA_PATH, 'players.7z') 
+FILE_GZ_TO_DECOMPRESS = os.path.join(ROOT, PLAYERS_DATA_PATH, 'players.tar.gz') 
 
 def uncompress_file():
     if not os.path.isfile(PLAYER_BOXSCORE_PATH):
-        Archive(FILE_TO_DECOMPRESS).extractall(os.path.join(ROOT, 'data', 'players'))
+        shutil.unpack_archive(FILE_GZ_TO_DECOMPRESS, PLAYERS_DATA_PATH)
 
 uncompress_file()
 
