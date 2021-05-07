@@ -17,13 +17,7 @@ FILES_PATH = {
     'Players boxscore traditional': PLAYER_BOXSCORE_TRADITIONAL_PATH
 }
 
-#Players Data
-boxscore = pd.read_csv(PLAYER_BOXSCORE_PATH, sep=';', index_col=False)
-boxscore_advanced = pd.read_csv(PLAYER_BOXSCORE_ADVANCED_PATH, sep=';', index_col=False)
-boxscore_scoring = pd.read_csv(PLAYER_BOXSCORE_SCORING_PATH, sep=';', index_col=False)
-boxscore_traditional = pd.read_csv(PLAYER_BOXSCORE_TRADITIONAL_PATH, sep=';', index_col=False)
-
-@st.cache()
+@st.cache(max_entries=4, ttl=1000)
 def load_csv(uploaded_file):
     csv = pd.read_csv(uploaded_file, sep=';')
     return csv
@@ -39,7 +33,7 @@ def display():
         selected_file = st.sidebar.radio('Datasets', FILES_DISPLAYED)
 
         dataframe_to_load = pd.read_csv(FILES_PATH.get(selected_file), sep=';', index_col=False)
-        dataframe_sampled = dataframe_to_load.sample(n=20000, random_state=200)
+        dataframe_sampled = dataframe_to_load.sample(n=10000, random_state=200)
         dataframe_sampled['Game Date'] = dataframe_sampled['Game Date'].map(lambda x: datetime.strptime(x, DATE_FORMAT).date())
         dataframe_sampled.sort_values(by='Game Date', ascending=False, inplace=True)
         dataframe_sampled.drop(columns=['Unnamed: 0', 'Player_Id', 'Game_Id', 'Team_Id', 'Match Up', 'Game Date'], inplace=True, errors='ignore')
@@ -63,8 +57,8 @@ def display():
         if uploaded_file is not None:
             dataframe_to_load = load_csv(uploaded_file)
         
-            if len(dataframe_to_load) > 20000:
-                dataframe_sampled = dataframe_to_load.sample(n=20000, random_state=200)
+            if len(dataframe_to_load) > 10000:
+                dataframe_sampled = dataframe_to_load.sample(n=10000, random_state=200)
                 dataframe_sampled.reset_index(drop=True, inplace=True)
 
     if dataframe_to_load is not None:
@@ -129,7 +123,7 @@ def display():
                 memory_size = serie.memory_usage() / 1000
                 st.write(f'Memory size: {memory_size} KiB')
             
-            @st.cache(allow_output_mutation=True)
+            @st.cache(allow_output_mutation=True, max_entries=4, ttl=1000)
             def show_histogram(serie):
                 fig = px.histogram(serie)
                 return fig
