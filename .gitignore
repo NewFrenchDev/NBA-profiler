@@ -4,3 +4,4 @@
 venv
 .env
 **/*.csv
+run-streamlit.sh
