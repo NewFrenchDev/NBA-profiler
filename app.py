@@ -5,8 +5,8 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-import psycopg2
-from sqlalchemy import create_engine
+# import psycopg2
+# from sqlalchemy import create_engine
 from dotenv import load_dotenv
 import tracemalloc
 import gc
@@ -24,29 +24,29 @@ st.set_page_config(page_title='NBA Profiler Dashboard',
 
 # player_dashboard = Dashboard()
 
-def filedownload(dataframe):
+# def filedownload(dataframe):
 
-    csv = dataframe.to_csv(index=False)
-    b64 = base64.b64encode(csv.encode()).decode()
-    href = f'<a href="data:file/csv;base64,{b64}" download="playerstats.csv">Download CSV file</a>'
-    return href
+#     csv = dataframe.to_csv(index=False)
+#     b64 = base64.b64encode(csv.encode()).decode()
+#     href = f'<a href="data:file/csv;base64,{b64}" download="playerstats.csv">Download CSV file</a>'
+#     return href
  
 
-@st.cache
-def load_data(year, team):
+# @st.cache
+# def load_data(year, team):
 
-    records = None
-    df=None
+#     records = None
+#     df=None
 
-    try:
-        cnx = create_engine(f"postgresql+psycopg2://{os.environ.get('USER')}:{os.environ.get('PASSWORD')}@{os.environ.get('HOST')}:{os.environ.get('PORT')}/{os.environ.get('NAME')}")
-        df = pd.read_sql_query(f"SELECT * FROM players_boxscore", con=cnx, parse_dates=['Game Date'])
-        df = df[df['Game Date'].dt.year == year]
-    except Exception as e:
-        print('Unable to connect to the database', e)
+#     try:
+#         cnx = create_engine(f"postgresql+psycopg2://{os.environ.get('USER')}:{os.environ.get('PASSWORD')}@{os.environ.get('HOST')}:{os.environ.get('PORT')}/{os.environ.get('NAME')}")
+#         df = pd.read_sql_query(f"SELECT * FROM players_boxscore", con=cnx, parse_dates=['Game Date'])
+#         df = df[df['Game Date'].dt.year == year]
+#     except Exception as e:
+#         print('Unable to connect to the database', e)
 
-    finally:
-        return df
+#     finally:
+#         return df
 
 @st.cache(allow_output_mutation=True)
 def create_dashboard(name='Test'):
