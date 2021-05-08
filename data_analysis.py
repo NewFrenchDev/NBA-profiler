@@ -1,4 +1,7 @@
 from datetime import datetime
+import shutil
+import pathlib
+import gc
 
 import streamlit as st
 import pandas as pd
@@ -7,14 +10,13 @@ import plotly.express as px
 
 from constants import *
 
-
 FILES_DISPLAYED = ('Players boxscore', 'Players boxscore advanced',
                    'Players boxscore scoring', 'Players boxscore traditional')
 FILES_PATH = {
     'Players boxscore': PLAYER_BOXSCORE_PATH,
-    'Players boxscore advanced': PLAYER_BOXSCORE_ADVANCED_PATH,
-    'Players boxscore scoring': PLAYER_BOXSCORE_SCORING_PATH,
-    'Players boxscore traditional': PLAYER_BOXSCORE_TRADITIONAL_PATH
+    # 'Players boxscore advanced': PLAYER_BOXSCORE_ADVANCED_PATH,
+    # 'Players boxscore scoring': PLAYER_BOXSCORE_SCORING_PATH,
+    # 'Players boxscore traditional': PLAYER_BOXSCORE_TRADITIONAL_PATH
 }
 
 @st.cache(max_entries=4, ttl=1000)
@@ -25,18 +27,37 @@ def load_csv(uploaded_file):
 def display():
 
     dataframe_to_load = None
+    selected_file = None
 
     import_or_use_local_dataset = st.sidebar.checkbox('Use NBA datasets')
 
     #Files user can used 
     if import_or_use_local_dataset:
-        selected_file = st.sidebar.radio('Datasets', FILES_DISPLAYED)
 
-        dataframe_to_load = pd.read_csv(FILES_PATH.get(selected_file), sep=';', index_col=False)
-        dataframe_sampled = dataframe_to_load.sample(n=10000, random_state=200)
-        dataframe_sampled['Game Date'] = dataframe_sampled['Game Date'].map(lambda x: datetime.strptime(x, DATE_FORMAT).date())
-        dataframe_sampled.sort_values(by='Game Date', ascending=False, inplace=True)
-        dataframe_sampled.drop(columns=['Unnamed: 0', 'Player_Id', 'Game_Id', 'Team_Id', 'Match Up', 'Game Date'], inplace=True, errors='ignore')
+        selected_file = 'Players boxscore'
+
+        @st.cache(allow_output_mutation=True)
+        def create_dataframe(selected_file):
+            shutil.unpack_archive(FILE_GZ_TO_DECOMPRESS, PLAYERS_DATA_PATH)
+            #Get files uncompressed
+            files = pathlib.Path(PLAYERS_DATA_PATH).glob('*.csv')
+            for f in files:
+                if f != pathlib.Path(FILES_PATH.get(selected_file)):
+                    os.remove(f)
+
+            dataframe_original = pd.read_csv(FILES_PATH.get(selected_file), sep=';', index_col=False)
+
+            os.remove(FILES_PATH.get(selected_file))
+
+            dataframe = dataframe_original.sample(n=10000, random_state=200)
+            dataframe['Game Date'] = dataframe['Game Date'].map(lambda x: datetime.strptime(x, DATE_FORMAT).date())
+            dataframe.sort_values(by='Game Date', ascending=False, inplace=True)
+            dataframe.drop(columns=['Unnamed: 0', 'Player_Id', 'Game_Id', 'Team_Id', 'Match Up', 'Game Date'], inplace=True, errors='ignore')
+
+            return dataframe_original, dataframe
+
+        dataframe_to_load, dataframe_sampled = create_dataframe(selected_file)
+        
     else:
         #Upload dataset
         uploaded_file = st.sidebar.file_uploader('Upload your input CSV file', type=["csv"])
@@ -60,6 +81,10 @@ def display():
             if len(dataframe_to_load) > 10000:
                 dataframe_sampled = dataframe_to_load.sample(n=10000, random_state=200)
                 dataframe_sampled.reset_index(drop=True, inplace=True)
+
+    # for f in FILES_PATH.values():
+    #     if selected_file != f:
+    #         os.remove(f)
 
     if dataframe_to_load is not None:
         st.header('**Input DataFrame**')
@@ -123,7 +148,7 @@ def display():
                 memory_size = serie.memory_usage() / 1000
                 st.write(f'Memory size: {memory_size} KiB')
             
-            @st.cache(allow_output_mutation=True, max_entries=4, ttl=1000)
+            @st.cache(allow_output_mutation=True, max_entries=4, ttl=3600)
             def show_histogram(serie):
                 fig = px.histogram(serie)
                 return fig
@@ -142,5 +167,12 @@ def display():
         with col2_variable2:
             selected_variable2 = st.selectbox('Variable2', options=dataframe_sampled.columns.values.tolist())
 
-        fig_scatter = px.scatter(dataframe_sampled, x=selected_variable1, y=selected_variable2, hover_data=['Player'], color='Team')
-        st.plotly_chart(fig_scatter)
+        @st.cache(allow_output_mutation=True, max_entries=3, ttl=3600)
+        def create_scatter_plot():
+            fig_scatter = px.scatter(dataframe_sampled, x=selected_variable1, y=selected_variable2, hover_data=['Player'], color='Team')
+            return fig_scatter
+
+        fig_to_plot = create_scatter_plot()
+        st.plotly_chart(fig_to_plot)
+
+        gc.collect()

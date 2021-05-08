@@ -8,8 +8,9 @@ import matplotlib.pyplot as plt
 import psycopg2
 from sqlalchemy import create_engine
 from dotenv import load_dotenv
+import gc
 
-import dashboard
+from dashboard import Dashboard
 import data_analysis
 
 load_dotenv('.env')
@@ -18,6 +19,7 @@ load_dotenv('.env')
 st.set_page_config(page_title='NBA Profiler Dashboard',
                    layout="wide")
 
+# player_dashboard = Dashboard()
 
 def filedownload(dataframe):
 
@@ -43,8 +45,14 @@ def load_data(year, team):
     finally:
         return df
 
+@st.cache(allow_output_mutation=True)
+def create_dashboard(name='Test'):
+    dashboard = Dashboard(name)
+    return dashboard
 
 def setup():
+
+    player_dashboard = create_dashboard(name='Luffy')
 
     #Sidebar
 
@@ -67,10 +75,9 @@ def setup():
         'A Web App by [Gérard LEMOING]')
 
     if select_display == 'Dashboard':
-        #Check if file exists
-        dashboard.uncompress_file()
-        player, number_of_game= dashboard.dashboard_first_row()
-        dashboard.dashboard_second_row(player, number_of_game)
+        player_dashboard.initiate_dashboard()
+        player_dashboard.dashboard_first_row()
+        player_dashboard.dashboard_second_row()
     elif select_display == 'Raw data profiling':
         data_analysis.display()
 
@@ -123,3 +130,4 @@ def setup():
 if __name__ == '__main__':
 
     setup()
+    gc.collect()
