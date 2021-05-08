@@ -12,7 +12,7 @@ import tracemalloc
 import gc
 
 from dashboard import Dashboard
-import data_analysis
+from data_analysis import DataAnalysisBoard
 
 load_dotenv('.env')
 
@@ -53,9 +53,14 @@ def create_dashboard(name='Test'):
     dashboard = Dashboard(name)
     return dashboard
 
+def create_data_analysis_board(name='Test'):
+    analysis_board = DataAnalysisBoard(name)
+    return analysis_board
+
 def setup():
 
     player_dashboard = create_dashboard(name='Luffy')
+    data_analysis_board = create_data_analysis_board(name='Zoro')
 
     #Sidebar
 
@@ -82,7 +87,7 @@ def setup():
         player_dashboard.dashboard_first_row()
         player_dashboard.dashboard_second_row()
     elif select_display == 'Raw data profiling':
-        data_analysis.display()
+        data_analysis_board.display()
     elif select_display == 'Track the ball':
         st.write('*Page in construction* 👷 ')
  
