@@ -8,12 +8,15 @@ import matplotlib.pyplot as plt
 import psycopg2
 from sqlalchemy import create_engine
 from dotenv import load_dotenv
+import tracemalloc
 import gc
 
 from dashboard import Dashboard
 import data_analysis
 
 load_dotenv('.env')
+
+tracemalloc.start()
 
 # SETUP ------------------------------------------------------------------------
 st.set_page_config(page_title='NBA Profiler Dashboard',
@@ -80,6 +83,16 @@ def setup():
         player_dashboard.dashboard_second_row()
     elif select_display == 'Raw data profiling':
         data_analysis.display()
+    elif select_display == 'Track the ball':
+        st.write('*Page in construction* 👷 ')
+ 
+    snapshot = tracemalloc.take_snapshot()
+    top_stats = snapshot.statistics('lineno')
+
+    
+    print("\n\n[Top 10]")
+    for stat in top_stats[:10]:
+        print(stat)
 
     # if select_display == 'Dashboard':
 

@@ -2,6 +2,7 @@ import os
 import shutil
 import pathlib
 from datetime import datetime
+import gc
 
 import streamlit as st
 import pandas as pd
@@ -30,7 +31,7 @@ class Dashboard:
         if self.boxscore is None:
             self.uncompress_file()
             #Players Data
-            self.boxscore = pd.read_csv(PLAYER_BOXSCORE_PATH, sep=';', index_col=False)
+            self.boxscore = pd.read_csv(PLAYER_BOXSCORE_PATH, sep=';', index_col=False, )
             self.unique_players = self.boxscore['Player'].unique()
             os.remove(PLAYER_BOXSCORE_PATH)
 
@@ -65,3 +66,6 @@ class Dashboard:
         player_data.reset_index(drop=True, inplace=True)
         player_data[['W/L']].style.applymap(self.highlight)
         st.dataframe(player_data.iloc[:self.number_selected])
+
+        del player_data
+        gc.collect()
