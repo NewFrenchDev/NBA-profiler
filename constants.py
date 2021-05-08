@@ -2,7 +2,7 @@ import os
 
 ROOT = os.path.dirname(__file__)
 DATE_FORMAT = '%m/%d/%Y'
-PLAYERS_DATA_PATH = os.path.join(ROOT, 'data', 'players') 
+PLAYERS_DATA_PATH = os.path.join(ROOT, 'data', 'player') 
 PLAYER_BOXSCORE_PATH = os.path.join(ROOT, PLAYERS_DATA_PATH, 'players-boxscores.csv') 
 PLAYER_BOXSCORE_ADVANCED_PATH = os.path.join(ROOT, PLAYERS_DATA_PATH, 'players-boxscores-advanced.csv') 
 PLAYER_BOXSCORE_SCORING_PATH = os.path.join(ROOT, PLAYERS_DATA_PATH, 'players-boxscores-scoring.csv') 
