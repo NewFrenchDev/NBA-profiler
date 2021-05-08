@@ -19,7 +19,7 @@ FILES_PATH = {
     # 'Players boxscore traditional': PLAYER_BOXSCORE_TRADITIONAL_PATH
 }
 
-@st.cache(max_entries=4, ttl=1000)
+@st.cache(max_entries=2, ttl=1000)
 def load_csv(uploaded_file):
     csv = pd.read_csv(uploaded_file, sep=';')
     return csv
@@ -148,14 +148,15 @@ def display():
                 memory_size = serie.memory_usage() / 1000
                 st.write(f'Memory size: {memory_size} KiB')
             
-            @st.cache(allow_output_mutation=True, show_spinner=True, max_entries=4, ttl=3600)
             def show_histogram(serie):
                 fig = px.histogram(serie)
                 return fig
 
-            with col2_variable:
-                fig = show_histogram(serie)
-                st.plotly_chart(fig)
+            st.spinner()
+            with st.spinner(text='In progress'):
+                with col2_variable:
+                    fig = show_histogram(serie)
+                    st.plotly_chart(fig)
 
         # st.write(' ')
         # st.header('***Interactions***')
