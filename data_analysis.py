@@ -148,7 +148,7 @@ def display():
                 memory_size = serie.memory_usage() / 1000
                 st.write(f'Memory size: {memory_size} KiB')
             
-            @st.cache(allow_output_mutation=True, max_entries=4, ttl=3600)
+            @st.cache(allow_output_mutation=True, show_spinner=True, max_entries=4, ttl=3600)
             def show_histogram(serie):
                 fig = px.histogram(serie)
                 return fig
@@ -157,22 +157,22 @@ def display():
                 fig = show_histogram(serie)
                 st.plotly_chart(fig)
 
-        st.write(' ')
-        st.header('***Interactions***')
+        # st.write(' ')
+        # st.header('***Interactions***')
 
-        col1_variable1, space1, col2_variable2, space2 = st.beta_columns([1, 0.2, 1, 2])
+        # col1_variable1, space1, col2_variable2, space2 = st.beta_columns([1, 0.2, 1, 2])
         
-        with col1_variable1:
-            selected_variable1 = st.selectbox('Variable1', options=dataframe_sampled.columns.values.tolist())
-        with col2_variable2:
-            selected_variable2 = st.selectbox('Variable2', options=dataframe_sampled.columns.values.tolist())
+        # with col1_variable1:
+        #     selected_variable1 = st.selectbox('Variable1', options=dataframe_sampled.columns.values.tolist())
+        # with col2_variable2:
+        #     selected_variable2 = st.selectbox('Variable2', options=dataframe_sampled.columns.values.tolist())
 
-        @st.cache(allow_output_mutation=True, max_entries=3, ttl=3600)
-        def create_scatter_plot():
-            fig_scatter = px.scatter(dataframe_sampled, x=selected_variable1, y=selected_variable2, hover_data=['Player'], color='Team')
-            return fig_scatter
+        # @st.cache(allow_output_mutation=True, show_spinner=True, max_entries=3, ttl=3600)
+        # def create_scatter_plot():
+        #     fig_scatter = px.scatter(dataframe_sampled, x=selected_variable1, y=selected_variable2, hover_data=['Player'], color='Team')
+        #     return fig_scatter
 
-        fig_to_plot = create_scatter_plot()
-        st.plotly_chart(fig_to_plot)
+        # fig_to_plot = create_scatter_plot()
+        # st.plotly_chart(fig_to_plot)
 
         gc.collect()

@@ -50,7 +50,6 @@ class Dashboard:
 
         with row1_2:
             self.number_selected = st.slider('Number of Games', max_value=self.number_of_game, value=20)
-
         # return player_selected, number_selected
 
     def dashboard_second_row(self):
@@ -65,4 +64,4 @@ class Dashboard:
         player_data.sort_values(by='Game Date', ascending=False, inplace=True)
         player_data.reset_index(drop=True, inplace=True)
         player_data[['W/L']].style.applymap(self.highlight)
-        st.dataframe(player_data.iloc[:self.number_of_game])
+        st.dataframe(player_data.iloc[:self.number_selected])
