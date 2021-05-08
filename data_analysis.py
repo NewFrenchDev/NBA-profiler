@@ -1,10 +1,12 @@
 from datetime import datetime
 import shutil
 import pathlib
+import tracemalloc
 import gc
 
 import streamlit as st
 import pandas as pd
+from functools import reduce
 import numpy as np
 import plotly.express as px 
 
@@ -119,7 +121,7 @@ def display():
 
         st.header('***Variables***')    
 
-        first_columns = dataframe_sampled.columns.values.tolist()[3:9]
+        first_columns = dataframe_sampled.columns.values.tolist()[3:6]
         columns = st.multiselect(' ', options=dataframe_sampled.columns.values.tolist(), default=first_columns)
 
         for column in columns:
@@ -157,6 +159,8 @@ def display():
                 with col2_variable:
                     fig = show_histogram(serie)
                     st.plotly_chart(fig)
+                    del fig
+                    gc.collect()
 
         # st.write(' ')
         # st.header('***Interactions***')
@@ -176,4 +180,6 @@ def display():
         # fig_to_plot = create_scatter_plot()
         # st.plotly_chart(fig_to_plot)
 
+        del dataframe_to_load
+        del dataframe_sampled
         gc.collect()
