@@ -6,12 +6,12 @@ TEAMS_DATA_PATH = os.path.join(ROOT, 'data', 'teams')
 TEAMS_BOXSCORE_PATH = os.path.join(ROOT, TEAMS_DATA_PATH, 'teams-simplified-boxscore.csv') 
 FILE_GZ_TO_DECOMPRESS = os.path.join(ROOT, TEAMS_DATA_PATH, 'teams-simplified-boxscore.tar.gz') 
 MODELS_FILES = {
-    'Regression logistic': 'regression_model.pkl',
-    'Decision Tree': "decision_tree_model.pkl",
-    'Random Forest': "random_forest_model.pkl",
-    'XGBoost': "xgboost_model.pkl",
-    'K Nearest Neighbors': "knn_model.pkl",
-    'AdaBoost': "adaboost_model.pkl",
+    'Logistic Regression': 'logistic_regression_model',
+    'Decision Tree': "decision_tree_model",
+    'Random Forest': "random_forest_model",
+    'XGBoost': "gradient_boosting_model",
+    'K Nearest Neighbors': "knn_model",
+    'AdaBoost': "adaboost_model",
     'Artificial Neural Network': "artificial_neural_network_model"
 }
 DATAFRAME_COLUMNS_TYPE = {

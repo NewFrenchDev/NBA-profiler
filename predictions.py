@@ -9,11 +9,14 @@ import matplotlib.pyplot as plt
 from joblib import load, dump
 import tensorflow as tf
 from tensorflow.keras.models import load_model
+from sklearn.preprocessing import  MinMaxScaler
+import pickle
 import warnings
 warnings.filterwarnings('ignore')
 
 from constants import *
 
+#Don't use GPU
 os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
 
 class Predictions:
@@ -28,10 +31,8 @@ class Predictions:
 
         self.dataset = pd.read_csv(TEAMS_BOXSCORE_PATH, index_col="Unnamed: 0", dtype=DATAFRAME_COLUMNS_TYPE)
 
-        st.write(*args[0])
         team_parameters = self.calculate_four_factors(*args[0])
         
-        st.write(*args[1])
         opponent_parameters = self.calculate_four_factors(*args[1])
 
         self.features.clear()
@@ -40,7 +41,6 @@ class Predictions:
         for param in opponent_parameters:
             self.features.append(param)
 
-        st.write(self.features)
         array = np.array(self.features).reshape(1, -1)
 
         model_file = MODELS_FILES.get(model_selected)
@@ -48,7 +48,24 @@ class Predictions:
         #import model
         if model_selected == "Artificial Neural Network":
             self.model_loaded = load_model(os.path.join(ROOT, "models", model_file))
-            self.predict_ann(array)
+            
+        else: 
+            with open(os.path.join(ROOT, "models", model_file), 'rb') as f:
+                self.model_loaded = pickle.load(f)
+
+            # coef = self.model_loaded.params
+            # st.write(coef)
+
+        st.write(f"**{model_selected}** model used for the prediction")
+        
+        st.header("Sample of the dataset for test prediction")
+        sample = self.dataset.sample(100)
+        st.dataframe(sample)
+        self.test_prediction(sample)
+
+        st.write("---")
+        st.header("Personal prevision test")
+        self.predict(array)
 
     def normalize_data(self, df, param_name, param_value):
         max = df[param_name].max()
@@ -66,47 +83,49 @@ class Predictions:
         free_throw = (arg[6] / arg[7])*100
         free_throw_normalized =  self.normalize_data(self.dataset, 'Percent of Points (Free Throws)', free_throw)
 
-        st.write(eFG_rate, TOV_rate, off_rebound_rate, free_throw)
-        st.write(eFG_rate_normalized, TOV_rate_normalized, off_rebound_rate_normalized, free_throw_normalized)
-
         return [eFG_rate_normalized, TOV_rate_normalized, off_rebound_rate_normalized, free_throw_normalized]
-
-    # def predict_result(self, array):
-    #     numeric_features = [i for i in range(10)] # Positions of numeric columns in X_train/X_test
-    #     numeric_transformer = Pipeline(steps=[
-    #         ('scaler', StandardScaler())
-    #     ])
-
-    #     preprocessor = ColumnTransformer(
-    #     transformers=[
-    #         ('num', numeric_transformer, numeric_features)
-    #     ])
-    #     print(array)
-
-    #     features_scaled = preprocessor.fit_transform(array)
-
-    #     print(features_scaled)
-
-    #     prediction =  self.model_loaded.predict(features_scaled)
-
-    #     print(prediction)
-
-    #     st.write(prediction)
-
-
-
     
-    def predict_ann(self, array):
+    def predict(self, array):
 
-        prediction = self.model_loaded.predict(array)
-        st.write(prediction)
+        prediction = self.model_loaded.predict_proba(array)
+        st.write(f"Team has **{np.round(prediction[0][1]*100,2)}**% to win with these parameters")
 
         del prediction
         gc.collect()
 
+    def test_prediction(self, dataset_sampled):
+        columns = ["Effective Field Goal Percentage", "Turnover percentage",
+                   "Offensive rebounding percentage", 'Percent of Points (Free Throws)',
+                   "Opponent Effective Field Goal Percentage", "Opponent Turnover percentage",
+                   "Opponent Offensive rebounding percentage", "Opponent Percent of Points (Free Throws)"]
 
-    def dashboard_first_row(self):
-        pass
+        features = dataset_sampled.loc[:, columns]
+        features = np.array(features)
 
-    def dashboard_second_row(self):
-        pass
+        scaling = MinMaxScaler(feature_range=(0,1))
+        scaled_features = scaling.fit_transform(features)
+
+        predictions = self.model_loaded.predict_proba(scaled_features)
+
+        row1_1, row1_space, row1_2 = st.beta_columns([2, 1, 2])
+        with row1_1:
+            st.header("Results of the match")
+            st.write( dataset_sampled.loc[:, 'W/L'].reset_index())
+
+        with row1_2:
+            st.header("Prediction/Classification")
+            st.write(predictions)
+
+        row2_space1, row2_1, row2_space2 = st.beta_columns([1, 2, 1])
+
+        number_good_prediction = 0
+
+        for result, prediction in zip(dataset_sampled.loc[:, 'W/L'], predictions):
+            if result == "L" and prediction[1] < 0.5:
+                number_good_prediction += 1
+            if result == 'W' and prediction[1] > 0.5:
+                number_good_prediction += 1
+
+        with row2_1:
+            st.write(f"Number of observations: **{len(dataset_sampled)}**")
+            st.write(f"Number of good predictions: **{number_good_prediction}**")
