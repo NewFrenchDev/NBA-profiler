@@ -5,11 +5,12 @@ import gc
 from predictions import Predictions
 from data_analysis import DataAnalysisBoard
 
-# tracemalloc.start()
-
 # SETUP ------------------------------------------------------------------------
 st.set_page_config(page_title='NBA and big data',
                    layout="wide")
+
+# tracemalloc.start()
+
 
 # Initialisation of each view --------------------------------------------------
 # Optimisation for Heroku and its 512ram and low memory
@@ -26,8 +27,8 @@ def create_data_analysis_board(name='Test'):
 # The app
 def setup():
 
-    data_analysis_board = create_data_analysis_board(name='Zoro')
-    predictions = create_prediction_view(name='Luffy')
+    data_analysis_board = create_data_analysis_board(name='DataBoard')
+    predictions = create_prediction_view(name='Prediction')
     team_parameters = []
     opponent_parameters = []
     
@@ -40,16 +41,14 @@ def setup():
 
     # ROW 1 ------------------------------------------------------------------------
 
-    row1_1, row1_space, row1_2 = st.beta_columns(
-        (2, 2, 2)
-        )
+    row1_1, row1_space, row1_2 = st.beta_columns([3, 1, 2])
 
-    row1_1.title('NBA data analysis')
+    row1_1.title('NBA data analysis 🏀')
 
     with row1_2:
         st.write('')
         row1_2.subheader(
-        'A Web App by [Gérard LEMOING]')
+        'A Web App by [Gérard LEMOING](https://www.linkedin.com/in/gérard-lemoing-807099138/)')
 
     if select_display == 'Data visualisation':
         data_analysis_board.display_view()
@@ -63,12 +62,17 @@ def setup():
                          'K Nearest Neighbors', 'AdaBoost', 'Artificial Neural Network']
         model_selected = st.sidebar.selectbox('Select a model: ', options=list_of_model)
 
-        detailed_mode = st.sidebar.checkbox('Detailed mode :')
+        if prediction_option_selected == 'Predict a match':
+            detailed_mode = st.sidebar.checkbox('Detailed mode')
+        else:
+            detailed_mode = False
 
         #parameters
-        st.sidebar.header('Team')
+        
 
-        if detailed_mode:
+        if prediction_option_selected == 'Predict a match' and detailed_mode:
+
+            st.sidebar.header('Team')
             field_goal_made = st.sidebar.slider('Field goal made', min_value=0, max_value=100, value=25, key='0')
             field_goal_attempted = st.sidebar.slider('Field goal attempted', min_value=0, max_value=100, value=25, key='1')
             three_pt_made = st.sidebar.slider('3 Point made', min_value=0, max_value=20, value=5, key='2')
@@ -78,17 +82,7 @@ def setup():
             free_throw_made = st.sidebar.slider('Free Throw made', min_value=0, max_value=20, value=5, key='6')
             free_throw_attempted = st.sidebar.slider('Free Throw attempted', min_value=0, max_value=30, value=10, key='7')
 
-            team_parameters = [field_goal_made, field_goal_attempted, three_pt_made, off_rebound,
-                            opp_def_rebound, turnover, free_throw_made, free_throw_attempted]
-        else:
-            eFG_rate = st.sidebar.slider('Effective Field Goal Percentage', min_value=0, max_value=100, value=25, key='8')
-            TOV_rate = st.sidebar.slider('Turnover percentage', min_value=0, max_value=100, value=25, key='9')
-            off_rebound_rate = st.sidebar.slider('Offensive rebounding percentage', min_value=0, max_value=100, value=25, key='10')
-            free_throw_rate = st.sidebar.slider('Free Throw percentage', min_value=0, max_value=100, value=25, key='11')
-
-        st.sidebar.header("Team's opponent")
-
-        if detailed_mode:
+            st.sidebar.header("Team's opponent")
             opp_field_goal_made = st.sidebar.slider('Field goal made', min_value=0, max_value=100, value=25)
             opp_field_goal_attempted = st.sidebar.slider('Field goal attempted', min_value=0, max_value=100, value=25)
             opp_three_pt_made = st.sidebar.slider('3 Point made', min_value=0, max_value=20, value=5)
@@ -98,16 +92,35 @@ def setup():
             opp_free_throw_made = st.sidebar.slider('Free Throw made', min_value=0, max_value=20, value=5)
             opp_free_throw_attempted = st.sidebar.slider('Free Throw attempted', min_value=0, max_value=30, value=10)
 
+            #Save paramaters in a list to send to the the prediction class
+            team_parameters = [field_goal_made, field_goal_attempted, three_pt_made, off_rebound,
+                            opp_def_rebound, turnover, free_throw_made, free_throw_attempted]
+
             opponent_parameters = [opp_field_goal_made, opp_field_goal_attempted, opp_three_pt_made, opp_off_rebound,
                                 opp_def_rebound_opp, opp_turnover, opp_free_throw_made, opp_free_throw_attempted]
-        else:
-            eFG_rate = st.sidebar.slider('Effective Field Goal Percentage', min_value=0, max_value=100, value=25)
-            TOV_rate = st.sidebar.slider('Turnover percentage', min_value=0, max_value=100, value=25)
-            off_rebound_rate = st.sidebar.slider('Offensive rebounding percentage', min_value=0, max_value=100, value=25)
-            free_throw_rate = st.sidebar.slider('Free Throw percentage', min_value=0, max_value=100, value=25)
 
-        if detailed_mode:
-            predictions.initiate_dashboard(model_selected, team_parameters, opponent_parameters)
+        elif prediction_option_selected == 'Predict a match' and not detailed_mode:
+
+            st.sidebar.header('Team')
+
+            eFG_rate = st.sidebar.slider('Effective Field Goal Percentage', min_value=0, max_value=100, value=25, key='8')
+            TOV_rate = st.sidebar.slider('Turnover percentage', min_value=0, max_value=100, value=25, key='9')
+            off_rebound_rate = st.sidebar.slider('Offensive rebounding percentage', min_value=0, max_value=100, value=25, key='10')
+            free_throw_rate = st.sidebar.slider('Free Throw percentage', min_value=0, max_value=100, value=25, key='11')
+
+            st.sidebar.header("Team's opponent")
+
+            opp_eFG_rate = st.sidebar.slider('Effective Field Goal Percentage', min_value=0, max_value=100, value=25)
+            opp_TOV_rate = st.sidebar.slider('Turnover percentage', min_value=0, max_value=100, value=25)
+            opp_off_rebound_rate = st.sidebar.slider('Offensive rebounding percentage', min_value=0, max_value=100, value=25)
+            opp_free_throw_rate = st.sidebar.slider('Free Throw percentage', min_value=0, max_value=100, value=25)
+
+            #Save paramaters in a list to send to the the prediction class
+            team_parameters = [eFG_rate, TOV_rate, off_rebound_rate, free_throw_rate]
+            opponent_parameters = [opp_eFG_rate, opp_TOV_rate, opp_off_rebound_rate, opp_free_throw_rate]
+
+        
+        predictions.initiate_dashboard(prediction_option_selected, detailed_mode, model_selected, team_parameters, opponent_parameters)
     
  
     # snapshot = tracemalloc.take_snapshot()
