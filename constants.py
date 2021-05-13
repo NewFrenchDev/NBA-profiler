@@ -12,7 +12,7 @@ MODELS_FILES = {
     'XGBoost': "xgboost_model.pkl",
     'K Nearest Neighbors': "knn_model.pkl",
     'AdaBoost': "adaboost_model.pkl",
-    'Artificial Neural Network': "articial_neural_network_model.pkl"
+    'Artificial Neural Network': "artificial_neural_network_model"
 }
 DATAFRAME_COLUMNS_TYPE = {
     'Points': 'int16',
