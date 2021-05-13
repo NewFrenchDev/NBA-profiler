@@ -6,10 +6,10 @@ import pandas as pd
 import numpy as np
 import plotly.express as px
 import matplotlib.pyplot as plt
-from joblib import load, dump
-import tensorflow as tf
+import seaborn as sns
 from tensorflow.keras.models import load_model
 from sklearn.preprocessing import  MinMaxScaler
+from sklearn.metrics import confusion_matrix
 import pickle
 import warnings
 warnings.filterwarnings('ignore')
@@ -19,6 +19,8 @@ from constants import *
 #Don't use GPU
 os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
 
+SAMPLE_SIZE = 450
+
 class Predictions:
 
     def __init__(self, name): 
@@ -27,22 +29,9 @@ class Predictions:
         self.features = []
         self.model_loaded = None
 
-    def initiate_dashboard(self, model_selected, *args):
-
-        self.dataset = pd.read_csv(TEAMS_BOXSCORE_PATH, index_col="Unnamed: 0", dtype=DATAFRAME_COLUMNS_TYPE)
-
-        team_parameters = self.calculate_four_factors(*args[0])
+    def initiate_dashboard(self, prediction_option, detailed_mode, model_selected, *args):
         
-        opponent_parameters = self.calculate_four_factors(*args[1])
-
-        self.features.clear()
-        for param in team_parameters:
-            self.features.append(param)
-        for param in opponent_parameters:
-            self.features.append(param)
-
-        array = np.array(self.features).reshape(1, -1)
-
+        #Get the model selected
         model_file = MODELS_FILES.get(model_selected)
 
         #import model
@@ -53,20 +42,36 @@ class Predictions:
             with open(os.path.join(ROOT, "models", model_file), 'rb') as f:
                 self.model_loaded = pickle.load(f)
 
-            # coef = self.model_loaded.params
-            # st.write(coef)
+        #Load dataset
+        self.dataset = pd.read_csv(TEAMS_BOXSCORE_PATH, index_col="Unnamed: 0", dtype=DATAFRAME_COLUMNS_TYPE)
 
-        st.write(f"**{model_selected}** model used for the prediction")
+        #Calculate the four factor if detailed mode selected
+        if prediction_option == "Predict a match" and detailed_mode == True:
+            team_parameters = self.calculate_four_factors(*args[0])
+            opponent_parameters = self.calculate_four_factors(*args[1])
+
+            #Save team and opponent parameters in same array
+            self.features.clear()
+            for param in team_parameters:
+                self.features.append(param)
+            for param in opponent_parameters:
+                self.features.append(param)
+
+            array = np.array(self.features).reshape(1, -1)
+
+            st.header("Personal prevision test")
+            self.predict(array)
+
+        #Test model on a sample of the dataset
+        if prediction_option == "Test models":
+            st.write(f"**{model_selected}** model used for the prediction")
+            
+            st.header("Random sample of the dataset for test prediction")
+            sample = self.dataset.sample(SAMPLE_SIZE)
+            st.dataframe(sample)
+            self.test_prediction(model_selected ,sample)
+
         
-        st.header("Sample of the dataset for test prediction")
-        sample = self.dataset.sample(100)
-        st.dataframe(sample)
-        self.test_prediction(sample)
-
-        st.write("---")
-        st.header("Personal prevision test")
-        self.predict(array)
-
     def normalize_data(self, df, param_name, param_value):
         max = df[param_name].max()
         min = df[param_name].min()
@@ -93,7 +98,7 @@ class Predictions:
         del prediction
         gc.collect()
 
-    def test_prediction(self, dataset_sampled):
+    def test_prediction(self, model_selected, dataset_sampled):
         columns = ["Effective Field Goal Percentage", "Turnover percentage",
                    "Offensive rebounding percentage", 'Percent of Points (Free Throws)',
                    "Opponent Effective Field Goal Percentage", "Opponent Turnover percentage",
@@ -107,16 +112,21 @@ class Predictions:
 
         predictions = self.model_loaded.predict_proba(scaled_features)
 
+        dataframe_predictions = pd.DataFrame(predictions, columns=['L', 'W'])
+
+       
         row1_1, row1_space, row1_2 = st.beta_columns([2, 1, 2])
         with row1_1:
+            st.header("Prediction/Classification")
+            st.write(dataframe_predictions)
+            
+        with row1_2:
             st.header("Results of the match")
             st.write( dataset_sampled.loc[:, 'W/L'].reset_index())
 
-        with row1_2:
-            st.header("Prediction/Classification")
-            st.write(predictions)
-
-        row2_space1, row2_1, row2_space2 = st.beta_columns([1, 2, 1])
+        st.write("---")
+        st.header("Analysis")
+        row2_1, row2_space2 , row2_2 = st.beta_columns([1, 0.5, 2])
 
         number_good_prediction = 0
 
@@ -126,6 +136,32 @@ class Predictions:
             if result == 'W' and prediction[1] > 0.5:
                 number_good_prediction += 1
 
+        ratio_win = number_good_prediction / SAMPLE_SIZE
+        if ratio_win > 0.9:
+            st.balloons()
+        del ratio_win
+
+        dataset_sampled["Win"] = [0 if result == 'L' else 1 for result in dataset_sampled["W/L"]]
+        predictions_rounded = np.argmax(predictions, axis=-1)
+        
         with row2_1:
-            st.write(f"Number of observations: **{len(dataset_sampled)}**")
-            st.write(f"Number of good predictions: **{number_good_prediction}**")
+            st.write(' ')
+            cm = confusion_matrix( dataset_sampled["Win"] , predictions_rounded)
+            fig = plt.figure(figsize=(5,5))
+            ax = sns.heatmap(cm, annot=True,  fmt="d")
+            ax.set_title(model_selected)
+            ax.set_xlabel('Predicted')
+            ax.set_ylabel('Real')
+            ax.set_aspect('auto')
+            st.write(fig)
+
+        with row2_2:
+            fig_pie = px.pie(values=[number_good_prediction, SAMPLE_SIZE - number_good_prediction], names=["Good predictions", "Bad predictions"],
+            title="Prediction accuracy")
+            st.plotly_chart(fig_pie, use_container_width=True)
+
+            del fig_pie
+        
+        ratio_win = None
+        del ratio_win
+        gc.garbage

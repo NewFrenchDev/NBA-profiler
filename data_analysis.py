@@ -8,6 +8,8 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import plotly.express as px 
+import matplotlib.pyplot as plt
+import seaborn as sns
 from PIL import Image
 
 from constants import *
@@ -42,6 +44,7 @@ class DataAnalysisBoard:
         """)
         
     def display_dataframe(self):
+        st.markdown('Dataset about 1000 random game on 49000 over the past 20 years')
         st.dataframe(self.dataframe_sampled)
 
     def display_team_evolution(self):
@@ -68,6 +71,48 @@ class DataAnalysisBoard:
         del fig_pts_dist
         gc.collect()
 
+
+    def four_factor_view(self):
+        st.header('The Four Factors')
+
+        self.dataframe_sampled["Win"] = [0 if result == 'L' else 1 for result in self.dataframe_sampled["W/L"]]
+        
+        row1_1 , row1_space, row1_2 = st.beta_columns([2, 0.2, 2])
+
+        #First factor
+        with row1_1:
+            fig1, axes = plt.subplots(1, 2, figsize=(15, 5))
+            fig1.suptitle('FOUR FACTORS : Effective Field Goal Percentage')
+            sns.regplot(ax=axes[0], x="Effective Field Goal Percentage", y="Win", data=self.dataframe_sampled, logistic=True)
+            sns.regplot(ax=axes[1], x="Opponent Effective Field Goal Percentage", y="Win", data=self.dataframe_sampled, logistic=True)
+            st.pyplot(fig1)
+
+        #Second factor
+        with row1_2:
+            fig2, axes = plt.subplots(1, 2, figsize=(15, 5))
+            fig2.suptitle('FOUR FACTORS : Turnover percentage')
+            sns.regplot(ax=axes[0], x="Turnover percentage", y="Win", data=self.dataframe_sampled, logistic=True)
+            sns.regplot(ax=axes[1], x="Opponent Turnover percentage", y="Win", data=self.dataframe_sampled, logistic=True)
+            st.pyplot(fig2)
+
+        row2_1 , row2_space, row2_2 = st.beta_columns([2, 0.2, 2])
+
+        #Third factor
+        with row2_1:
+            fig3, axes = plt.subplots(1, 2, figsize=(15, 5))
+            fig3.suptitle('FOUR FACTORS : Offensive rebounding percentage')
+            sns.regplot(ax=axes[0], x="Offensive rebounding percentage", y="Win", data=self.dataframe_sampled, logistic=True)
+            sns.regplot(ax=axes[1], x="Opponent Offensive rebounding percentage", y="Win", data=self.dataframe_sampled, logistic=True)
+            st.pyplot(fig3)
+
+        #Fouth factor
+        with row2_2:
+            fig4, axes = plt.subplots(1, 2, figsize=(15, 5))
+            fig4.suptitle('FOUR FACTORS : Percent of Free Throws made')
+            sns.regplot(ax=axes[0], x="Percent of Points (Free Throws)", y="Win", data=self.dataframe_sampled, logistic=True)
+            sns.regplot(ax=axes[1], x="Opponent Percent of Points (Free Throws)", y="Win", data=self.dataframe_sampled, logistic=True)
+            st.pyplot(fig4)
+
     def convert_image(self):
         with open(os.path.join(ROOT, 'images', 'newplot.png')) as f:
             data = f.read()
@@ -81,8 +126,11 @@ class DataAnalysisBoard:
             self.uncompress_file()
 
         self.introduction()
-
+        st.write('---')
         self.display_dataframe()
+
+        st.write('---')
+        self.four_factor_view()
 
         self.display_points_distribution()
 
