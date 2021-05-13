@@ -11,61 +11,39 @@ from dotenv import load_dotenv
 import tracemalloc
 import gc
 
-from dashboard import Dashboard
+from predictions import Predictions
 from data_analysis import DataAnalysisBoard
 
 load_dotenv('.env')
 
-tracemalloc.start()
+# tracemalloc.start()
 
 # SETUP ------------------------------------------------------------------------
-st.set_page_config(page_title='NBA Profiler Dashboard',
+st.set_page_config(page_title='NBA and big data',
                    layout="wide")
 
-# player_dashboard = Dashboard()
+# Initialisation of each view --------------------------------------------------
+# Optimisation for Heroku and its 512ram and low memory
+# @st.cache(allow_output_mutation=True)
+def create_prediction_view(name='Test'):
+    predictions_view = Predictions(name)
+    return predictions_view
 
-# def filedownload(dataframe):
-
-#     csv = dataframe.to_csv(index=False)
-#     b64 = base64.b64encode(csv.encode()).decode()
-#     href = f'<a href="data:file/csv;base64,{b64}" download="playerstats.csv">Download CSV file</a>'
-#     return href
- 
-
-# @st.cache
-# def load_data(year, team):
-
-#     records = None
-#     df=None
-
-#     try:
-#         cnx = create_engine(f"postgresql+psycopg2://{os.environ.get('USER')}:{os.environ.get('PASSWORD')}@{os.environ.get('HOST')}:{os.environ.get('PORT')}/{os.environ.get('NAME')}")
-#         df = pd.read_sql_query(f"SELECT * FROM players_boxscore", con=cnx, parse_dates=['Game Date'])
-#         df = df[df['Game Date'].dt.year == year]
-#     except Exception as e:
-#         print('Unable to connect to the database', e)
-
-#     finally:
-#         return df
-
-@st.cache(allow_output_mutation=True)
-def create_dashboard(name='Test'):
-    dashboard = Dashboard(name)
-    return dashboard
-
+# @st.cache(allow_output_mutation=True)
 def create_data_analysis_board(name='Test'):
     analysis_board = DataAnalysisBoard(name)
     return analysis_board
 
+# The app
 def setup():
 
-    player_dashboard = create_dashboard(name='Luffy')
+    predictions = create_prediction_view(name='Luffy')
     data_analysis_board = create_data_analysis_board(name='Zoro')
 
     #Sidebar
 
     st.sidebar.header('User Input Features')
-    select_display = st.sidebar.radio('Cool Features', ['Raw data profiling','Dashboard', 'Track the ball'])
+    select_display = st.sidebar.radio('Cool Features', ['Data visualisation','Match prediction'])
 
     #Main Page
 
@@ -75,75 +53,59 @@ def setup():
         (2, 2, 2)
         )
 
-    row1_1.title('NBA Profiler')
+    row1_1.title('NBA data analysis')
 
     with row1_2:
         st.write('')
         row1_2.subheader(
         'A Web App by [Gérard LEMOING]')
 
-    if select_display == 'Dashboard':
-        player_dashboard.initiate_dashboard()
-        player_dashboard.dashboard_first_row()
-        player_dashboard.dashboard_second_row()
-    elif select_display == 'Raw data profiling':
-        data_analysis_board.display()
-    elif select_display == 'Track the ball':
-        st.write('*Page in construction* 👷 ')
+    if select_display == 'Match prediction':
+
+        #update sidebar
+        list_of_model = ['Regression logistic', 'Decision Tree', 'Random Forest', 'XGBoost',
+                         'K Nearest Neighbors', 'AdaBoost', 'Artificial Neural Network']
+        model_selected = st.sidebar.selectbox('Select a model: ', options=list_of_model)
+
+        #parameters
+        st.sidebar.header('Team')
+        field_goal_made = st.sidebar.slider('Field goal made', min_value=0, max_value=100, value=25, key='field goal made')
+        field_goal_attempted = st.sidebar.slider('Field goal attempted', min_value=0, max_value=100, value=25, key='1')
+        three_pt_made = st.sidebar.slider('3 Point made', min_value=0, max_value=100, value=25, key='2')
+        off_rebound = st.sidebar.slider('Offensive rebound', min_value=0, max_value=100, value=25, key='3')
+        opp_def_rebound = st.sidebar.slider('Opponent offensive rebound', min_value=0, max_value=100, value=25, key='4') 
+        turnover = st.sidebar.slider('Turnover', min_value=0, max_value=100, value=25, key='5')
+        free_throw_made = st.sidebar.slider('Free Throw made', min_value=0, max_value=100, value=25, key='6')
+        free_throw_attempted = st.sidebar.slider('Free Throw attempted', min_value=0, max_value=100, value=25, key='7')
+
+        team_parameters = [field_goal_made, field_goal_attempted, three_pt_made, off_rebound,
+                           opp_def_rebound, turnover, free_throw_made, free_throw_attempted]
+
+        st.sidebar.header("Team's opponent")
+        opp_field_goal_made = st.sidebar.slider('Field goal made', min_value=0, max_value=100, value=25)
+        opp_field_goal_attempted = st.sidebar.slider('Field goal attempted', min_value=0, max_value=100, value=25)
+        opp_three_pt_made = st.sidebar.slider('3 Point made', min_value=0, max_value=100, value=25)
+        opp_off_rebound = st.sidebar.slider('Offensive rebound', min_value=0, max_value=100, value=25)
+        opp_def_rebound_opp = st.sidebar.slider('Opponent offensive rebound', min_value=0, max_value=100, value=25) 
+        opp_turnover = st.sidebar.slider('Turnover', min_value=0, max_value=100, value=25)
+        opp_free_throw_made = st.sidebar.slider('Free Throw made', min_value=0, max_value=100, value=25)
+        opp_free_throw_attempted = st.sidebar.slider('Free Throw attempted', min_value=0, max_value=100, value=25)
+
+        opponent_parameters = [opp_field_goal_made, opp_field_goal_attempted, opp_three_pt_made, opp_off_rebound,
+                               opp_def_rebound_opp, opp_turnover, opp_free_throw_made, opp_free_throw_attempted]
+
+        predictions.initiate_dashboard(model_selected, team_parameters, opponent_parameters)
+        predictions.dashboard_first_row()
+        predictions.dashboard_second_row()
+    elif select_display == 'Data visualisation':
+        data_analysis_board.display_view()
  
-    snapshot = tracemalloc.take_snapshot()
-    top_stats = snapshot.statistics('lineno')
+    # snapshot = tracemalloc.take_snapshot()
+    # top_stats = snapshot.statistics('lineno')
 
-    
-    print("\n\n[Top 10]")
-    for stat in top_stats[:10]:
-        print(stat)
-
-    # if select_display == 'Dashboard':
-
-    #     selected_year = st.sidebar.selectbox('Year', list(reversed(range(2000, 2022))))
-
-    #     selected_team = st.sidebar.selectbox('Team', ['WAS', 'TOR', 'LAL'])
-
-    
-
-    # if select_display == 'Dashboard':
-
-
-    #     st.write("""
-
-    #     # Dashboard
-
-    #     """)
-
-
-    #     if st.button('Connect to Database Postgresql'):
-
-    #         test = load_data(selected_year, selected_team)
-    #         test
-
-    #         st.markdown(filedownload(test), unsafe_allow_html=True)
-
-
-    #     # st.image('https://hoopdirt.com/wp-content/uploads/2018/10/ipad-court-690x340.png')
-
-    #     #Upload dataset
-    #     uploaded_file = st.file_uploader('Upload your input CSV file', type=["csv"])
-
-    #     if uploaded_file is not None:
-    #         dataframe_to_load = pd.read_csv(uploaded_file)
-    #         st.dataframe(dataframe_to_load)
-
-
-    #     col1, col2, col3 = st.beta_columns(3)
-
-    #     col1.subheader('First section')
-
-    #     col2.subheader('Second section')
-
-    #     col3.subheader('Third section')
-
-
+    # print('--------------TOP 10-----------')
+    # for stat in top_stats[:10]:
+    #     print(stat)
 
 if __name__ == '__main__':
 
