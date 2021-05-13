@@ -1,20 +1,9 @@
-import os
-import base64
-
 import streamlit as st 
-import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
-# import psycopg2
-# from sqlalchemy import create_engine
-from dotenv import load_dotenv
 import tracemalloc
 import gc
 
 from predictions import Predictions
 from data_analysis import DataAnalysisBoard
-
-load_dotenv('.env')
 
 # tracemalloc.start()
 
