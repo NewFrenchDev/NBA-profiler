@@ -37,9 +37,11 @@ def create_data_analysis_board(name='Test'):
 # The app
 def setup():
 
-    predictions = create_prediction_view(name='Luffy')
     data_analysis_board = create_data_analysis_board(name='Zoro')
-
+    predictions = create_prediction_view(name='Luffy')
+    team_parameters = []
+    opponent_parameters = []
+    
     #Sidebar
 
     st.sidebar.header('User Input Features')
@@ -60,45 +62,64 @@ def setup():
         row1_2.subheader(
         'A Web App by [Gérard LEMOING]')
 
-    if select_display == 'Match prediction':
+    if select_display == 'Data visualisation':
+        data_analysis_board.display_view()
+
+    elif select_display == 'Match prediction':
 
         #update sidebar
         list_of_model = ['Regression logistic', 'Decision Tree', 'Random Forest', 'XGBoost',
                          'K Nearest Neighbors', 'AdaBoost', 'Artificial Neural Network']
         model_selected = st.sidebar.selectbox('Select a model: ', options=list_of_model)
 
+        detailed_mode = st.sidebar.checkbox('Detailed mode :')
+
         #parameters
         st.sidebar.header('Team')
-        field_goal_made = st.sidebar.slider('Field goal made', min_value=0, max_value=100, value=25, key='0')
-        field_goal_attempted = st.sidebar.slider('Field goal attempted', min_value=0, max_value=100, value=25, key='1')
-        three_pt_made = st.sidebar.slider('3 Point made', min_value=0, max_value=100, value=25, key='2')
-        off_rebound = st.sidebar.slider('Offensive rebound', min_value=0, max_value=100, value=25, key='3')
-        opp_def_rebound = st.sidebar.slider('Opponent offensive rebound', min_value=0, max_value=100, value=25, key='4') 
-        turnover = st.sidebar.slider('Turnover', min_value=0, max_value=100, value=25, key='5')
-        free_throw_made = st.sidebar.slider('Free Throw made', min_value=0, max_value=100, value=25, key='6')
-        free_throw_attempted = st.sidebar.slider('Free Throw attempted', min_value=0, max_value=100, value=25, key='7')
 
-        team_parameters = [field_goal_made, field_goal_attempted, three_pt_made, off_rebound,
-                           opp_def_rebound, turnover, free_throw_made, free_throw_attempted]
+        if detailed_mode:
+            field_goal_made = st.sidebar.slider('Field goal made', min_value=0, max_value=100, value=25, key='0')
+            field_goal_attempted = st.sidebar.slider('Field goal attempted', min_value=0, max_value=100, value=25, key='1')
+            three_pt_made = st.sidebar.slider('3 Point made', min_value=0, max_value=20, value=5, key='2')
+            off_rebound = st.sidebar.slider('Offensive rebound', min_value=0, max_value=40, value=10, key='3')
+            opp_def_rebound = st.sidebar.slider('Opponent offensive rebound', min_value=0, max_value=40, value=10, key='4') 
+            turnover = st.sidebar.slider('Turnover', min_value=0, max_value=30, value=5, key='5')
+            free_throw_made = st.sidebar.slider('Free Throw made', min_value=0, max_value=20, value=5, key='6')
+            free_throw_attempted = st.sidebar.slider('Free Throw attempted', min_value=0, max_value=30, value=10, key='7')
+
+            team_parameters = [field_goal_made, field_goal_attempted, three_pt_made, off_rebound,
+                            opp_def_rebound, turnover, free_throw_made, free_throw_attempted]
+        else:
+            eFG_rate = st.sidebar.slider('Effective Field Goal Percentage', min_value=0, max_value=100, value=25, key='8')
+            TOV_rate = st.sidebar.slider('Turnover percentage', min_value=0, max_value=100, value=25, key='9')
+            off_rebound_rate = st.sidebar.slider('Offensive rebounding percentage', min_value=0, max_value=100, value=25, key='10')
+            free_throw_rate = st.sidebar.slider('Free Throw percentage', min_value=0, max_value=100, value=25, key='11')
 
         st.sidebar.header("Team's opponent")
-        opp_field_goal_made = st.sidebar.slider('Field goal made', min_value=0, max_value=100, value=25)
-        opp_field_goal_attempted = st.sidebar.slider('Field goal attempted', min_value=0, max_value=100, value=25)
-        opp_three_pt_made = st.sidebar.slider('3 Point made', min_value=0, max_value=100, value=25)
-        opp_off_rebound = st.sidebar.slider('Offensive rebound', min_value=0, max_value=100, value=25)
-        opp_def_rebound_opp = st.sidebar.slider('Opponent offensive rebound', min_value=0, max_value=100, value=25) 
-        opp_turnover = st.sidebar.slider('Turnover', min_value=0, max_value=100, value=25)
-        opp_free_throw_made = st.sidebar.slider('Free Throw made', min_value=0, max_value=100, value=25)
-        opp_free_throw_attempted = st.sidebar.slider('Free Throw attempted', min_value=0, max_value=100, value=25)
 
-        opponent_parameters = [opp_field_goal_made, opp_field_goal_attempted, opp_three_pt_made, opp_off_rebound,
-                               opp_def_rebound_opp, opp_turnover, opp_free_throw_made, opp_free_throw_attempted]
+        if detailed_mode:
+            opp_field_goal_made = st.sidebar.slider('Field goal made', min_value=0, max_value=100, value=25)
+            opp_field_goal_attempted = st.sidebar.slider('Field goal attempted', min_value=0, max_value=100, value=25)
+            opp_three_pt_made = st.sidebar.slider('3 Point made', min_value=0, max_value=20, value=5)
+            opp_off_rebound = st.sidebar.slider('Offensive rebound', min_value=0, max_value=40, value=10)
+            opp_def_rebound_opp = st.sidebar.slider('Opponent offensive rebound', min_value=0, max_value=40, value=10) 
+            opp_turnover = st.sidebar.slider('Turnover', min_value=0, max_value=30, value=5)
+            opp_free_throw_made = st.sidebar.slider('Free Throw made', min_value=0, max_value=20, value=5)
+            opp_free_throw_attempted = st.sidebar.slider('Free Throw attempted', min_value=0, max_value=30, value=10)
 
-        predictions.initiate_dashboard(model_selected, team_parameters, opponent_parameters)
-        predictions.dashboard_first_row()
-        predictions.dashboard_second_row()
-    elif select_display == 'Data visualisation':
-        data_analysis_board.display_view()
+            opponent_parameters = [opp_field_goal_made, opp_field_goal_attempted, opp_three_pt_made, opp_off_rebound,
+                                opp_def_rebound_opp, opp_turnover, opp_free_throw_made, opp_free_throw_attempted]
+        else:
+            eFG_rate = st.sidebar.slider('Effective Field Goal Percentage', min_value=0, max_value=100, value=25)
+            TOV_rate = st.sidebar.slider('Turnover percentage', min_value=0, max_value=100, value=25)
+            off_rebound_rate = st.sidebar.slider('Offensive rebounding percentage', min_value=0, max_value=100, value=25)
+            free_throw_rate = st.sidebar.slider('Free Throw percentage', min_value=0, max_value=100, value=25)
+
+        if detailed_mode:
+            predictions.initiate_dashboard(model_selected, team_parameters, opponent_parameters)
+        # predictions.dashboard_first_row()
+        # predictions.dashboard_second_row()
+    
  
     # snapshot = tracemalloc.take_snapshot()
     # top_stats = snapshot.statistics('lineno')
