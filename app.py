@@ -69,7 +69,7 @@ def setup():
 
         #parameters
         st.sidebar.header('Team')
-        field_goal_made = st.sidebar.slider('Field goal made', min_value=0, max_value=100, value=25, key='field goal made')
+        field_goal_made = st.sidebar.slider('Field goal made', min_value=0, max_value=100, value=25, key='0')
         field_goal_attempted = st.sidebar.slider('Field goal attempted', min_value=0, max_value=100, value=25, key='1')
         three_pt_made = st.sidebar.slider('3 Point made', min_value=0, max_value=100, value=25, key='2')
         off_rebound = st.sidebar.slider('Offensive rebound', min_value=0, max_value=100, value=25, key='3')

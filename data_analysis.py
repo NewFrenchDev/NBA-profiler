@@ -55,7 +55,6 @@ class DataAnalysisBoard:
 
         dataset_five_teams = pd.concat([dataset_GSW, dataset_LAL, dataset_UTA, dataset_CHI, dataset_TOR], ignore_index=True)
         dataset_five_teams.sort_values(by='Year', inplace=True)
-        print(dataset_five_teams)
         fig_evolution = px.histogram(dataset_five_teams, x='Team', y='W/L', color="W/L", barmode='group', animation_frame='Year')
         st.plotly_chart(fig_evolution)
 
