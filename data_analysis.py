@@ -1,168 +1,98 @@
-from datetime import datetime
 import shutil
 import pathlib
 import tracemalloc
 import gc
+import plotly
+import base64
 
 import streamlit as st
 import pandas as pd
-from functools import reduce
 import numpy as np
 import plotly.express as px 
+from PIL import Image
 
 from constants import *
 
-FILES_DISPLAYED = ('Players boxscore', 'Players boxscore advanced',
-                   'Players boxscore scoring', 'Players boxscore traditional')
+FILENAME = 'Teams Data'
 FILES_PATH = {
-    'Players boxscore': PLAYER_BOXSCORE_PATH,
-    # 'Players boxscore advanced': PLAYER_BOXSCORE_ADVANCED_PATH,
-    # 'Players boxscore scoring': PLAYER_BOXSCORE_SCORING_PATH,
-    # 'Players boxscore traditional': PLAYER_BOXSCORE_TRADITIONAL_PATH
+    'Teams Data': TEAMS_BOXSCORE_PATH,
 }
 
 class DataAnalysisBoard:
 
     def __init__(self, name):
         self.name = name
-        self.dataframe_to_load = None
-        self.selected_file = None
-        self.dataframe_to_load = None
+        self.dataframe = None
         self.dataframe_sampled = None
 
-    def load_csv(self, uploaded_file):
-        csv = pd.read_csv(uploaded_file, sep=';')
-        return csv
+    def uncompress_file(self):
+        shutil.unpack_archive(FILE_GZ_TO_DECOMPRESS, TEAMS_DATA_PATH)
+        #Get files uncompressed
+        self.dataframe = pd.read_csv(TEAMS_BOXSCORE_PATH, index_col="Unnamed: 0", dtype=DATAFRAME_COLUMNS_TYPE)
+        #Transform the type of column Game date
+        self.dataframe_sampled = self.dataframe.sample(1000)
 
-    def display(self):
 
-        import_or_use_local_dataset = st.sidebar.checkbox('Use NBA datasets')
+    # def load_csv(self, uploaded_file):
+    #     csv = pd.read_csv(uploaded_file)
+    #     return csv
 
-        #Files user can used 
-        if import_or_use_local_dataset:
+    def introduction(self):
+        st.write("""
+        Data science is a new weapon in sports and I will show you why!
+        """)
+        
+    def display_dataframe(self):
+        st.dataframe(self.dataframe_sampled)
 
-            self.selected_file = 'Players boxscore'
+    def display_team_evolution(self):
+        #Figure des répartitions de W/L par équipe
+        dataset_GSW = self.dataframe[self.dataframe['Team'] == "GSW"].loc[:]
+        dataset_LAL = self.dataframe[self.dataframe['Team'] == "LAL"].loc[:]
+        dataset_UTA = self.dataframe[self.dataframe['Team'] == "UTA"].loc[:]
+        dataset_CHI = self.dataframe[self.dataframe['Team'] == "CHI"].loc[:]
+        dataset_TOR = self.dataframe[self.dataframe['Team'] == "TOR"].loc[:]
 
-            if self.dataframe_to_load is None:
-                shutil.unpack_archive(FILE_GZ_TO_DECOMPRESS, PLAYERS_DATA_PATH)
-                #Get files uncompressed
-                files = pathlib.Path(PLAYERS_DATA_PATH).glob('*.csv')
-                for f in files:
-                    if f != pathlib.Path(FILES_PATH.get(self.selected_file)):
-                        os.remove(f)
+        dataset_five_teams = pd.concat([dataset_GSW, dataset_LAL, dataset_UTA, dataset_CHI, dataset_TOR], ignore_index=True)
+        dataset_five_teams.sort_values(by='Year', inplace=True)
+        print(dataset_five_teams)
+        fig_evolution = px.histogram(dataset_five_teams, x='Team', y='W/L', color="W/L", barmode='group', animation_frame='Year')
+        st.plotly_chart(fig_evolution)
 
-                self.dataframe_to_load = pd.read_csv(FILES_PATH.get(self.selected_file), sep=';', index_col=False)
+        del fig_evolution
+        gc.collect()
 
-                os.remove(FILES_PATH.get(self.selected_file))
+    def display_points_distribution(self):
+        # data = self.dataframe.groupby(by='Year')['Points'].mean()
+        fig_pts_dist = px.scatter(self.dataframe_sampled, x='Year', y='Points', color='W/L', marginal_x='box',  marginal_y='box')
+        st.plotly_chart(fig_pts_dist)
 
-                self.dataframe_sampled = self.dataframe_to_load.sample(n=10000, random_state=200)
-                self.dataframe_sampled['Game Date'] = self.dataframe_sampled['Game Date'].map(lambda x: datetime.strptime(x, DATE_FORMAT).date())
-                self.dataframe_sampled.sort_values(by='Game Date', ascending=False, inplace=True)
-                self.dataframe_sampled.drop(columns=['Unnamed: 0', 'Player_Id', 'Game_Id', 'Team_Id', 'Match Up', 'Game Date'], inplace=True, errors='ignore')
-            
-        else:
-            self.selected_file = None
-            #Upload dataset
-            uploaded_file = st.sidebar.file_uploader('Upload your input CSV file', type=["csv"])
+        del fig_pts_dist
+        gc.collect()
 
-            if uploaded_file is not None:
-                self.dataframe_to_load = self.load_csv(uploaded_file)
-            
-                if len(self.dataframe_to_load) > 10000:
-                    self.dataframe_sampled = self.dataframe_to_load.sample(n=10000, random_state=200)
-                    self.dataframe_sampled.reset_index(drop=True, inplace=True)
+    def convert_image(self):
+        with open(os.path.join(ROOT, 'images', 'newplot.png')) as f:
+            data = f.read()
+        return base64.b64encode(data).decode()
 
-        if self.dataframe_to_load is not None:
-            st.header('**Input DataFrame**')
-            st.write(self.dataframe_sampled)
-            st.write('---')
-            st.header('**Pandas Profiling Report**')
-            st.write(' ')
-            st.write('*Overview*')
-            st.write(' ')
-            st.header('***Dataset statistics***')
-            number_of_columns = len(self.dataframe_to_load.columns)
-            st.write(f'Number of column: {number_of_columns}')       
-            number_of_observation = len(self.dataframe_to_load)
-            st.write(f'Number of observations: {number_of_observation}')
-            number_of_missing_values = sum(self.dataframe_to_load.isna().sum().values)
-            st.write(f'Missing values: {number_of_missing_values}')        
-            number_of_missing_values_percent = np.round(number_of_missing_values/(number_of_observation * number_of_columns) * 100, 2)
-            st.write(f'Missing values(%): {number_of_missing_values_percent}%')
-            number_of_duplicated_rows = len(self.dataframe_to_load) - len(self.dataframe_to_load.drop_duplicates())
-            st.write(f'Duplicated rows: {number_of_duplicated_rows}')
-            number_of_duplicated_rows_percent = np.round(number_of_duplicated_rows/(number_of_observation * number_of_columns) * 100, 2)
-            st.write(f'Duplicated rows(%): {number_of_duplicated_rows_percent}%')
-            total_size_memory_usage = np.round(self.dataframe_to_load.memory_usage(deep=True).sum() / 1000, 2)
-            st.write(f'Total size memory usage: {total_size_memory_usage} KiB')
-            average_size_memory_usage = np.round(self.dataframe_to_load.memory_usage(deep=True).mean() / 1000, 2)
-            st.write(f'Average size in memory: {average_size_memory_usage} KiB')
+    def display_view(self):
 
-            st.header('***Variable types***')
-            types_in_dataframe = self.dataframe_to_load.dtypes.value_counts()
-            for index, el in zip(types_in_dataframe.index, types_in_dataframe):
-                st.write(f'{index}: {el}')
+        #Check if the dataframe is already in memory
+        #If not load the data from file
+        if self.dataframe is None:
+            self.uncompress_file()
 
-            st.header('***Variables***')    
+        self.introduction()
 
-            first_columns = self.dataframe_sampled.columns.values.tolist()[3:6]
-            columns = st.multiselect(' ', options=self.dataframe_sampled.columns.values.tolist(), default=first_columns)
+        self.display_dataframe()
 
-            for column in columns:
-                col1_variable, col2_variable = st.beta_columns([1,3])
-                # for column in dataframe_to_load.columns:
+        self.display_points_distribution()
 
-                with col1_variable:
-                    st.write(' ')
-                    st.header(column)
-                    serie = self.dataframe_to_load[column]
-                    distinct_values = len(serie.unique())
-                    st.write(f'Distinct values: {distinct_values}')
-                    distinct_values_percent = np.round((distinct_values / len(serie)) * 100, 2)
-                    st.write(f'Distinct values(%): {distinct_values_percent}')
-                    number_of_missing_values = serie.isna().sum()
-                    st.write(f'Missing values: {number_of_missing_values}')        
-                    number_of_missing_values_percent = np.round(number_of_missing_values/len(serie) * 100, 2)
-                    st.write(f'Missing values(%): {number_of_missing_values_percent}')
-                    if serie.dtype != object:
-                        mean = np.round(serie.mean(), 2)
-                        st.write(f'Mean: {mean}')
-                        minimum = serie.min()
-                        st.write(f'Minimum: {minimum}')
-                        maximum = serie.max()
-                        st.write(f'Maximum: {maximum}')
-                    memory_size = serie.memory_usage() / 1000
-                    st.write(f'Memory size: {memory_size} KiB')
-                
-                def show_histogram(serie):
-                    fig = px.histogram(serie)
-                    return fig
+        self.display_team_evolution()
 
-                st.spinner()
-                with st.spinner(text='In progress'):
-                    with col2_variable:
-                        fig = show_histogram(serie)
-                        st.plotly_chart(fig)
-                        del fig
-                        del serie
-                        gc.collect()
+        path = os.path.join(ROOT, 'images', 'newplot.png')
+        image = Image.open(path)
+        st.image(image)
 
-            # st.write(' ')
-            # st.header('***Interactions***')
-
-            # col1_variable1, space1, col2_variable2, space2 = st.beta_columns([1, 0.2, 1, 2])
-            
-            # with col1_variable1:
-            #     selected_variable1 = st.selectbox('Variable1', options=dataframe_sampled.columns.values.tolist())
-            # with col2_variable2:
-            #     selected_variable2 = st.selectbox('Variable2', options=dataframe_sampled.columns.values.tolist())
-
-            # @st.cache(allow_output_mutation=True, show_spinner=True, max_entries=3, ttl=3600)
-            # def create_scatter_plot():
-            #     fig_scatter = px.scatter(dataframe_sampled, x=selected_variable1, y=selected_variable2, hover_data=['Player'], color='Team')
-            #     return fig_scatter
-
-            # fig_to_plot = create_scatter_plot()
-            # st.plotly_chart(fig_to_plot)
-
-            gc.collect()
+        #Always launch the garbage collector to free the memory
+        gc.collect()
