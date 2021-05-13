@@ -56,8 +56,10 @@ def setup():
 
     elif select_display == 'Match prediction':
 
+        prediction_option_selected = st.sidebar.radio('Prediction options', ['Test models', 'Predict a match'])
+
         #update sidebar
-        list_of_model = ['Regression logistic', 'Decision Tree', 'Random Forest', 'XGBoost',
+        list_of_model = ['Logistic Regression', 'Decision Tree', 'Random Forest', 'XGBoost',
                          'K Nearest Neighbors', 'AdaBoost', 'Artificial Neural Network']
         model_selected = st.sidebar.selectbox('Select a model: ', options=list_of_model)
 
@@ -106,8 +108,6 @@ def setup():
 
         if detailed_mode:
             predictions.initiate_dashboard(model_selected, team_parameters, opponent_parameters)
-        # predictions.dashboard_first_row()
-        # predictions.dashboard_second_row()
     
  
     # snapshot = tracemalloc.take_snapshot()
