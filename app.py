@@ -68,8 +68,6 @@ def setup():
             detailed_mode = False
 
         #parameters
-        
-
         if prediction_option_selected == 'Predict a match' and detailed_mode:
 
             st.sidebar.header('Team')
@@ -103,17 +101,17 @@ def setup():
 
             st.sidebar.header('Team')
 
-            eFG_rate = st.sidebar.slider('Effective Field Goal Percentage', min_value=0, max_value=100, value=25, key='8')
-            TOV_rate = st.sidebar.slider('Turnover percentage', min_value=0, max_value=100, value=25, key='9')
-            off_rebound_rate = st.sidebar.slider('Offensive rebounding percentage', min_value=0, max_value=100, value=25, key='10')
-            free_throw_rate = st.sidebar.slider('Free Throw percentage', min_value=0, max_value=100, value=25, key='11')
+            eFG_rate = st.sidebar.slider('Effective Field Goal Percentage', min_value=0, max_value=100, value=25, key='8') /100
+            TOV_rate = st.sidebar.slider('Turnover percentage', min_value=0, max_value=100, value=25, key='9') / 100
+            off_rebound_rate = st.sidebar.slider('Offensive rebounding percentage', min_value=0, max_value=100, value=25, key='10') / 100
+            free_throw_rate = st.sidebar.slider('Free Throw percentage', min_value=0, max_value=100, value=25, key='11') / 100
 
             st.sidebar.header("Team's opponent")
 
-            opp_eFG_rate = st.sidebar.slider('Effective Field Goal Percentage', min_value=0, max_value=100, value=25)
-            opp_TOV_rate = st.sidebar.slider('Turnover percentage', min_value=0, max_value=100, value=25)
-            opp_off_rebound_rate = st.sidebar.slider('Offensive rebounding percentage', min_value=0, max_value=100, value=25)
-            opp_free_throw_rate = st.sidebar.slider('Free Throw percentage', min_value=0, max_value=100, value=25)
+            opp_eFG_rate = st.sidebar.slider('Effective Field Goal Percentage', min_value=0, max_value=100, value=25) / 100
+            opp_TOV_rate = st.sidebar.slider('Turnover percentage', min_value=0, max_value=100, value=25) / 100
+            opp_off_rebound_rate = st.sidebar.slider('Offensive rebounding percentage', min_value=0, max_value=100, value=25) / 100
+            opp_free_throw_rate = st.sidebar.slider('Free Throw percentage', min_value=0, max_value=100, value=25) / 100
 
             #Save paramaters in a list to send to the the prediction class
             team_parameters = [eFG_rate, TOV_rate, off_rebound_rate, free_throw_rate]
