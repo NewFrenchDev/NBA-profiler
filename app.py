@@ -1,31 +1,44 @@
-import streamlit as st 
 import tracemalloc
 import gc
+import shutil
+from numpy.lib.npyio import load
 
+import streamlit as st 
+import pandas as pd
+
+
+from constants import *
 from predictions import Predictions
 from data_analysis import DataAnalysisBoard
 
 # SETUP ------------------------------------------------------------------------
-st.set_page_config(page_title='NBA and big data',
+st.set_page_config(page_title='Data Science in NBA',
                    layout="wide")
 
 # tracemalloc.start()
+
+def uncompress_file():
+    shutil.unpack_archive(FILE_GZ_TO_DECOMPRESS, TEAMS_DATA_PATH)
 
 
 # Initialisation of each view --------------------------------------------------
 # Optimisation for Heroku and its 512ram and low memory
 # @st.cache(allow_output_mutation=True)
-def create_prediction_view(name='Test'):
+def create_prediction_view(name):
     predictions_view = Predictions(name)
     return predictions_view
 
-# @st.cache(allow_output_mutation=True)
-def create_data_analysis_board(name='Test'):
+@st.cache(allow_output_mutation=True)
+def create_data_analysis_board(name):
     analysis_board = DataAnalysisBoard(name)
     return analysis_board
 
 # The app
 def setup():
+
+    #Check file 
+    if not os.path.isfile(TEAMS_BOXSCORE_PATH):
+        uncompress_file()
 
     data_analysis_board = create_data_analysis_board(name='DataBoard')
     predictions = create_prediction_view(name='Prediction')
@@ -43,7 +56,7 @@ def setup():
 
     row1_1, row1_space, row1_2 = st.beta_columns([3, 1, 2])
 
-    row1_1.title('NBA data analysis 🏀')
+    row1_1.title('NBA Win/Loss Classifier 🏀')
 
     with row1_2:
         st.write('')
@@ -58,7 +71,7 @@ def setup():
         prediction_option_selected = st.sidebar.radio('Prediction options', ['Test models', 'Predict a match'])
 
         #update sidebar
-        list_of_model = ['Logistic Regression', 'Decision Tree', 'Random Forest', 'XGBoost',
+        list_of_model = ['Logistic Regression', 'Decision Tree', 'Random Forest', 'Gradient Boosting',
                          'K Nearest Neighbors', 'AdaBoost', 'Artificial Neural Network']
         model_selected = st.sidebar.selectbox('Select a model: ', options=list_of_model)
 
@@ -118,7 +131,7 @@ def setup():
             opponent_parameters = [opp_eFG_rate, opp_TOV_rate, opp_off_rebound_rate, opp_free_throw_rate]
 
         
-        predictions.initiate_dashboard(prediction_option_selected, detailed_mode, model_selected, team_parameters, opponent_parameters)
+        predictions.display_prediction_view(prediction_option_selected, detailed_mode, model_selected, team_parameters, opponent_parameters)
     
  
     # snapshot = tracemalloc.take_snapshot()
