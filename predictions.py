@@ -30,6 +30,9 @@ class Predictions:
         self.model_loaded = None
 
     def initiate_dashboard(self, prediction_option, detailed_mode, model_selected, *args):
+
+        team_parameters = None
+        opponent_parameters = None
         
         #Get the model selected
         model_file = MODELS_FILES.get(model_selected)
@@ -46,9 +49,15 @@ class Predictions:
         self.dataset = pd.read_csv(TEAMS_BOXSCORE_PATH, index_col="Unnamed: 0", dtype=DATAFRAME_COLUMNS_TYPE)
 
         #Calculate the four factor if detailed mode selected
-        if prediction_option == "Predict a match" and detailed_mode == True:
-            team_parameters = self.calculate_four_factors(*args[0])
-            opponent_parameters = self.calculate_four_factors(*args[1])
+        if prediction_option == "Predict a match":
+
+            if detailed_mode:
+                team_parameters = self.calculate_four_factors(*args[0])
+                opponent_parameters = self.calculate_four_factors(*args[1])
+
+            else:
+                team_parameters = args[0]
+                opponent_parameters = args[1]
 
             #Save team and opponent parameters in same array
             self.features.clear()
@@ -59,7 +68,7 @@ class Predictions:
 
             array = np.array(self.features).reshape(1, -1)
 
-            st.header("Personal prevision test")
+            st.header(f"Personal prevision test with {model_selected}")
             self.predict(array)
 
         #Test model on a sample of the dataset
