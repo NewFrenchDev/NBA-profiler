@@ -4,6 +4,7 @@ import random
 import streamlit as st
 import pandas as pd
 import plotly.express as px 
+import plotly.figure_factory as ff
 import matplotlib.pyplot as plt
 import seaborn as sns
 
@@ -29,7 +30,6 @@ class DataAnalysisBoard:
     def display_dataframe(self):
         st.markdown(f'Dataset about 1000 random game on {len(self.dataframe)} over the past 20 years')
         st.dataframe(self.dataframe_sampled)
-
 
     def display_team_evolution(self, number_of_team):
         #Random team selected
@@ -83,6 +83,12 @@ class DataAnalysisBoard:
         del fig_pts_diff_average
         gc.collect()
 
+    def display_distribution(self):
+        fig = ff.create_distplot([self.dataframe_sampled["Points"], self.dataframe_sampled["3 Points Made"],
+                                  self.dataframe_sampled["Effective Field Goal Percentage"], self.dataframe_sampled["Turnover"]],
+                                  group_labels=['Points', "3 Points Made", "Effective Field Goal Percentage", "Turnover"])
+        st.plotly_chart(fig)
+
     def create_four_factor_regplot(self, title, team_column, opponent_column):
 
         fig, axes = plt.subplots(1, 2, figsize=(15, 5))
@@ -108,7 +114,7 @@ class DataAnalysisBoard:
 
         return figs
 
-    def four_factor_view(self):
+    def display_four_factor(self):
 
         self.dataframe_sampled["Win"] = [0 if result == 'L' else 1 for result in self.dataframe_sampled["W/L"]]
 
@@ -166,8 +172,12 @@ class DataAnalysisBoard:
 
         self.display_team_evolution(number_of_team=5)
 
+        st.write("---")
+        st.header("Density estimation")
+        self.display_distribution()
+
         st.write('---')
-        self.four_factor_view()
+        self.display_four_factor()
 
         #Always launch the garbage collector to free the memory
         gc.collect()

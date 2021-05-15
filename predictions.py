@@ -130,9 +130,9 @@ class Predictions:
         with row2_1:
             st.write('Confusion matrix ')
             st.write(fig)
-            st.markdown("""
-            The number of 
-            """)
+            # st.markdown("""
+            # The number of 
+            # """)
 
         with row2_2:
             st.plotly_chart(fig_pie, use_container_width=True)

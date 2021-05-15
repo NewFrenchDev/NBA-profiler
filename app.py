@@ -28,7 +28,7 @@ def create_prediction_view(name):
     predictions_view = Predictions(name)
     return predictions_view
 
-@st.cache(allow_output_mutation=True)
+# @st.cache(allow_output_mutation=True)
 def create_data_analysis_board(name):
     analysis_board = DataAnalysisBoard(name)
     return analysis_board
