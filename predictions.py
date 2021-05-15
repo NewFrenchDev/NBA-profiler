@@ -178,7 +178,7 @@ class Predictions:
             st.markdown("""
             This Artificial Neural Network has been created with the API [Keras](https://keras.io/api/) from [Tensorflow](https://www.tensorflow.org/api_docs/python/tf).\n  
             """)
-        st.code(CODE_BY_MODEL.get(model_selected))
+        st.code(CODE_PER_MODEL.get(model_selected))
 
 
     def display_prediction_view(self, prediction_option, detailed_mode, model_selected, *args):

@@ -52,7 +52,7 @@ DATAFRAME_COLUMNS_TYPE = {
     'Opponent Percent of Points (Free Throws)': 'float16'
 }
 
-CODE_BY_MODEL = {
+CODE_PER_MODEL = {
 
     "Logistic Regression": """
 from sklearn.linear_model import LogisticRegression
@@ -85,7 +85,7 @@ model.fit(X_train, Y_train)
 with open('decision_tree_model', 'wb') as f:
   pickle.dump(model, f)
 
-# Evaluation du modèle 
+# Evaluate model
 print("Decision Tree Train score : {}".format(model.score(X_train, Y_train)))
 print("Decision Tree Test score : {}".format(model.score(X_test, Y_test)))
     """,
