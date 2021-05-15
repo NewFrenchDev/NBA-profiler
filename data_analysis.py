@@ -28,7 +28,7 @@ class DataAnalysisBoard:
         """)
         
     def display_dataframe(self):
-        st.markdown(f'Dataset about 1000 random game on {len(self.dataframe)} over the past 20 years')
+        st.markdown(f'1000 random games from **{len(self.dataframe)}** over the past 20 years')
         st.dataframe(self.dataframe_sampled)
 
     def display_team_evolution(self, number_of_team):
@@ -83,10 +83,10 @@ class DataAnalysisBoard:
         del fig_pts_diff_average
         gc.collect()
 
-    def display_distribution(self):
-        fig = ff.create_distplot([self.dataframe_sampled["Points"], self.dataframe_sampled["3 Points Made"],
-                                  self.dataframe_sampled["Effective Field Goal Percentage"], self.dataframe_sampled["Turnover"]],
-                                  group_labels=['Points', "3 Points Made", "Effective Field Goal Percentage", "Turnover"])
+    def display_distribution(self, density_distribution_group):
+        fig = ff.create_distplot([self.dataframe_sampled[group] for group in density_distribution_group],
+                                  group_labels=density_distribution_group)
+
         st.plotly_chart(fig)
 
     def create_four_factor_regplot(self, title, team_column, opponent_column):
@@ -120,7 +120,7 @@ class DataAnalysisBoard:
 
         slot_success_message = st.empty()
 
-        with st.spinner(text='Data processing in progress...'):
+        with st.spinner(text='Four Factors processing in progress...'):
             
             titles = ['Effective Field Goal Percentage', 'Turnover percentage',
                       'Offensive rebounding percentage', 'Percent of Free Throws made']
@@ -159,7 +159,7 @@ class DataAnalysisBoard:
             st.pyplot(figs[3])
     
 
-    def display_view(self):
+    def display_view(self, density_distribution_group, show_four_factors):
 
         #Check if the dataframe is already in memory
         #If not load the data from file
@@ -174,10 +174,11 @@ class DataAnalysisBoard:
 
         st.write("---")
         st.header("Density estimation")
-        self.display_distribution()
+        self.display_distribution(density_distribution_group)
 
-        st.write('---')
-        self.display_four_factor()
+        if show_four_factors:
+            st.write('---')
+            self.display_four_factor()
 
         #Always launch the garbage collector to free the memory
         gc.collect()

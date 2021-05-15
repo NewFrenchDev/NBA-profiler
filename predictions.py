@@ -211,3 +211,6 @@ class Predictions:
             self.test_prediction_on_dataset_sample(model_selected ,sample)
 
         self.free_the_balloon()
+
+        #Always launch the garbage collector to free the memory
+        gc.collect()
