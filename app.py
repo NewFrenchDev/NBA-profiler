@@ -33,6 +33,11 @@ def create_data_analysis_board(name):
     analysis_board = DataAnalysisBoard(name)
     return analysis_board
 
+@st.cache(ttl=3600, suppress_st_warning=True)
+def load_csv(filepath, dtype):
+    dataset = pd.read_csv(filepath, index_col="Unnamed: 0", dtype=dtype)
+    return dataset
+
 # The app
 def setup():
 
@@ -40,10 +45,10 @@ def setup():
     if not os.path.isfile(TEAMS_BOXSCORE_PATH):
         uncompress_file()
 
+    dataset = load_csv(TEAMS_BOXSCORE_PATH, DATAFRAME_COLUMNS_TYPE)
+
     data_analysis_board = create_data_analysis_board(name='DataBoard')
     predictions = create_prediction_view(name='Prediction')
-    team_parameters = []
-    opponent_parameters = []
     
     #Sidebar
 
@@ -64,7 +69,15 @@ def setup():
         'A Web App by [Gérard LEMOING](https://www.linkedin.com/in/gérard-lemoing-807099138/)')
 
     if select_display == 'Data visualisation':
-        data_analysis_board.display_view()
+
+        #Element to show for density 
+        columns_from_dataset = dataset.columns.tolist()[5:]
+        density_distribution_group = st.sidebar.multiselect('Density distribution group:', options=columns_from_dataset,
+                                                    default=["Points", "3 Points Made", "Effective Field Goal Percentage", "Turnover"],)
+
+        show_four_factors = st.sidebar.checkbox('Show Four Factors')
+
+        data_analysis_board.display_view(density_distribution_group, show_four_factors)
 
     elif select_display == 'Match prediction':
 
@@ -82,6 +95,10 @@ def setup():
 
         #parameters
         if prediction_option_selected == 'Predict a match' and detailed_mode:
+            
+            #Variable for stocking values and send it to prediction view
+            team_parameters = []
+            opponent_parameters = []
 
             st.sidebar.header('Team')
             field_goal_made = st.sidebar.slider('Field goal made', min_value=0, max_value=100, value=25, key='0')
@@ -143,5 +160,8 @@ def setup():
 
 if __name__ == '__main__':
 
+    #Launch the app
     setup()
+
+    #Always launch the garbage collector to free the memory
     gc.collect()
