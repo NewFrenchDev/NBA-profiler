@@ -56,8 +56,8 @@ def setup():
     
     #Sidebar
 
-    st.sidebar.header('User Input Features')
-    select_display = st.sidebar.radio('Cool Features', ['Data vizualisation','Match prediction'])
+    st.sidebar.header('Playground')
+    select_display = st.sidebar.radio('Sections', ['Data vizualisation','Match prediction'])
 
     #Main Page
 
