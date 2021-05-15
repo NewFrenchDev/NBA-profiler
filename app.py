@@ -57,7 +57,7 @@ def setup():
     #Sidebar
 
     st.sidebar.header('User Input Features')
-    select_display = st.sidebar.radio('Cool Features', ['Data visualisation','Match prediction'])
+    select_display = st.sidebar.radio('Cool Features', ['Data vizualisation','Match prediction'])
 
     #Main Page
 
@@ -72,7 +72,7 @@ def setup():
         row1_2.subheader(
         'A Web App by [Gérard LEMOING](https://www.linkedin.com/in/gérard-lemoing-807099138/)')
 
-    if select_display == 'Data visualisation':
+    if select_display == 'Data vizualisation':
 
         #Element to show for density 
         columns_from_dataset = dataset.columns.tolist()[5:]
