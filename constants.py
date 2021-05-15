@@ -163,7 +163,7 @@ model.fit(X_train, Y_train)
 
 #Save model
 with open('adaboost_model', 'wb') as f:
-  pickle.dump(model_ada_tree, f)
+  pickle.dump(model, f)
 
 # Evaluate model
 print("AdaBoost Train score : {}".format(model.score(X_train, Y_train)))

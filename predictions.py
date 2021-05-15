@@ -185,7 +185,7 @@ class Predictions:
 
         self.load_dataset()
 
-        st.markdown("If you observed some balloons on your screen... It means that the prediction is **above 90**%! 🔥🔥")
+        st.markdown("If you observe some balloons on your screen... It means the prediction is **above 90**%! 🔥🔥")
 
         self.import_model(model_selected)
 
@@ -200,10 +200,11 @@ class Predictions:
             
             st.write(f"**{model_selected}** model is used for this prediction")
 
-            st.header('About the code')
+            st.header('About the model')
             self.display_code(model_selected)
 
-            st.header("Random sample of the dataset for test prediction")
+            st.header("Random sample from the dataset for the test prediction")
+            st.markdown("This sample is chosen randomly each time the app re-run")
             sample = self.dataset.sample(SAMPLE_SIZE)
             st.dataframe(sample)
 
