@@ -45,6 +45,10 @@ def setup():
     if not os.path.isfile(TEAMS_BOXSCORE_PATH):
         uncompress_file()
 
+    #Variable for stocking values and send it to prediction view
+    team_parameters = []
+    opponent_parameters = []
+
     dataset = load_csv(TEAMS_BOXSCORE_PATH, DATAFRAME_COLUMNS_TYPE)
 
     data_analysis_board = create_data_analysis_board(name='DataBoard')
@@ -96,10 +100,6 @@ def setup():
         #parameters
         if prediction_option_selected == 'Predict a match' and detailed_mode:
             
-            #Variable for stocking values and send it to prediction view
-            team_parameters = []
-            opponent_parameters = []
-
             st.sidebar.header('Team')
             field_goal_made = st.sidebar.slider('Field goal made', min_value=0, max_value=100, value=25, key='0')
             field_goal_attempted = st.sidebar.slider('Field goal attempted', min_value=0, max_value=100, value=25, key='1')
