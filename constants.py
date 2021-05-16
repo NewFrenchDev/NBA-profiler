@@ -174,9 +174,8 @@ print("AdaBoost Test score : {}".format(model.score(X_test, Y_test)))
 import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Activation, Dense, Flatten, Dropout
+from tensorflow.keras.layers import Dense
 from tensorflow.keras.optimizers import Adam
-from tensorflow.keras.metrics import categorical_crossentropy
 from sklearn.preprocessing import  MinMaxScaler
 
 #Create model
