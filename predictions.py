@@ -67,11 +67,6 @@ class Predictions:
         array = np.array(self.features).reshape(1, -1)
 
         return array
-
-    def free_the_balloon(self):
-        #Show balloon if the prediction is more than 90%
-        if self.win_rate > 90:
-            st.balloons()
     
     def normalize_data(self, df, param_name, param_value):
         max = df[param_name].max()
@@ -86,15 +81,25 @@ class Predictions:
         TOV_rate_normalized = self.normalize_data(self.dataset, 'Turnover percentage', TOV_rate)
         off_rebound_rate = (arg[3] /(arg[3] + arg[4]))*100
         off_rebound_rate_normalized = self.normalize_data(self.dataset, 'Offensive rebounding percentage', off_rebound_rate)
-        free_throw = (arg[6] / arg[7])*100
-        free_throw_normalized =  self.normalize_data(self.dataset, 'Percent of Points (Free Throws)', free_throw)
+        free_throw_rate = (arg[6] / arg[1])*100
+        free_throw_normalized =  self.normalize_data(self.dataset, 'Free Throw Rate', free_throw_rate)
 
         return [eFG_rate_normalized, TOV_rate_normalized, off_rebound_rate_normalized, free_throw_normalized]
     
     def predict(self, array):
         prediction = self.model_loaded.predict_proba(array)
         self.win_rate = np.round(prediction[0][1]*100,2)
-        st.write(f"Team has **{self.win_rate}**% to win with these parameters")
+        st.write(f"""
+        Predicition:  
+        Team has **{self.win_rate}**% to win with these parameters""")
+
+        st.write('')
+        if self.win_rate < 50:
+            st.write("You need to find a better balance with you team composition")
+        elif 50 < self.win_rate < 60:
+            st.write("The balance seems good you can prepare a stategy with this configuration.")
+        else:
+            st.write("The balance is pretty good but don't think it's easy to win without effort!")
 
     def compare_result_to_prediction(self, model_selected, dataset_sampled, predictions):
         st.write("---")
@@ -144,9 +149,9 @@ class Predictions:
 
     def test_prediction_on_dataset_sample(self, model_selected, dataset_sampled):
         columns = ["Effective Field Goal Percentage", "Turnover percentage",
-                   "Offensive rebounding percentage", 'Percent of Points (Free Throws)',
+                   "Offensive rebounding percentage", 'Percent of Free Throw Made',
                    "Opponent Effective Field Goal Percentage", "Opponent Turnover percentage",
-                   "Opponent Offensive rebounding percentage", "Opponent Percent of Points (Free Throws)"]
+                   "Opponent Offensive rebounding percentage", "Opponent Percent of Free Throw Made"]
 
         features = dataset_sampled.loc[:, columns]
         features = np.array(features)
@@ -185,14 +190,51 @@ class Predictions:
 
         self.load_dataset()
 
-        st.markdown("If you observe some balloons on your screen... It means the prediction is **above 90**%! 🔥🔥")
-
         self.import_model(model_selected)
 
         #Calculate the four factor if detailed mode selected
         if prediction_option == "Predict a match":
+
+            #Explication about Four factors
+            st.header('**About the Four Factors**')
+            with st.beta_expander('If you want to undestand the four keys factors 👉'):
+                st.markdown("""
+                **Dean Oliver**, a **data analyst** and **basketball coach** who has worked for Seattle Supersonics and Denver Nuggets among others, 
+                developed a theory between 2002 and 2004 that was about to change the way that numbers and basketball are associated. 
+                According to his “Four Factors” theory, those aspects are based on how a possession could possibly end. 
+                Efficiency in shooting, turnovers, rebounding and free throws can bring wins to teams.\n\n
+                1. Score efficiently
+                2. Protect the ball
+                3. Don't stop the action until you score (get the rebound)
+                4. Get to the foul line
+                """)
+                st.write(" ")
+                st.markdown('**Each fator in formula:**')
+                st.latex("{Effective Field Goal Percentage} = \\frac{{Field Goal Made} + 0.5 * {3 Points Made}}{Field Goal Attempted}")
+                st.latex("{Turnover Rate} = \\frac{Turnover}{{Field Goal Attempted} + 0.44 * {Free Throw Attempted} + Turnover}")
+                st.latex("{Offensive Rebound Rate} = \\frac{Offensive Rebound}{{Offensive Rebound} + {Opponent Defensive Rebound}}")
+                st.latex("{Free Throw Rate} = \\frac{Free Throw Made}{Field Goal Attempted}")
+                st.markdown("""During a game the team is opposing to another team so we need to apply these parameters to the other team. 
+                In sport, you need to analyse and estimate your opponent strengths and weaknesses in order to win!  
+                So in fact, it's **8 factors**!
+                """)
+
+            with st.beta_expander("You don't understand some terms? 👉"):
+               st.markdown("""
+               **Field Goal Made** is the number of time the team *scored*.\n\n  
+               **Field Goad Attempted** is the number of time the team *failed to score*.\n\n
+               **3 Points Made** is the number of time the team scored with a 3 points.\n\n  
+               **Turnover** is the number of time the team lost the ball before to try to score.\n\n  
+               **Offensive Rebound** is the number of time the team get the ball after a rebound after they failed to score. 
+               The action continue for the team.\n\n  
+               **Opponent  Defensive Rebound** is the number of time the opponent team get the ball after a rebound when the team failed to score. 
+               The action is disrupted for the team.\n\n
+               **Free Throw Made** is the number of point get after the opponent's fault.\n\n  
+               """)
+   
+
             features = self.process_input_before_prediction(detailed_mode, *args)
-            st.header(f"Personal prevision test with {model_selected}")
+            st.header(f"**Prediction with *{model_selected}* **")
             self.predict(features)
 
         #Test model on a sample of the dataset
@@ -210,7 +252,7 @@ class Predictions:
 
             self.test_prediction_on_dataset_sample(model_selected ,sample)
 
-        self.free_the_balloon()
+            st.info("Tips: Press R to rerun the app with the same model. The sample won't be the same at each rerun. 😉")
 
         #Always launch the garbage collector to free the memory
         gc.collect()
