@@ -33,7 +33,6 @@ def create_data_analysis_board(name):
     analysis_board = DataAnalysisBoard(name)
     return analysis_board
 
-@st.cache(ttl=3600, suppress_st_warning=True)
 def load_csv(filepath, dtype):
     dataset = pd.read_csv(filepath, index_col="Unnamed: 0", dtype=dtype)
     return dataset
@@ -76,8 +75,10 @@ def setup():
 
         #Element to show for density 
         columns_from_dataset = dataset.columns.tolist()[5:]
-        density_distribution_group = st.sidebar.multiselect('Density distribution group:', options=columns_from_dataset,
-                                                    default=["Points", "3 Points Made", "Effective Field Goal Percentage", "Turnover"],)
+        with st.sidebar.form(key='submit_group'):
+            density_distribution_group = st.multiselect('Density distribution group:', options=columns_from_dataset,
+                                                        default=["Points", "3 Points Made", "Effective Field Goal Percentage", "Turnover"],)
+            st.form_submit_button("Show distribution plot 🔥")
 
         show_four_factors = st.sidebar.checkbox('Show Four Factors')
 
@@ -102,30 +103,30 @@ def setup():
             
             st.sidebar.header('Team')
             field_goal_made = st.sidebar.slider('Field goal made', min_value=0, max_value=100, value=25, key='0')
-            field_goal_attempted = st.sidebar.slider('Field goal attempted', min_value=0, max_value=100, value=25, key='1')
+            field_goal_attempt = st.sidebar.slider('Field goal attempt', min_value=0, max_value=100, value=25, key='1')
             three_pt_made = st.sidebar.slider('3 Point made', min_value=0, max_value=20, value=5, key='2')
             off_rebound = st.sidebar.slider('Offensive rebound', min_value=0, max_value=40, value=10, key='3')
             opp_def_rebound = st.sidebar.slider('Opponent offensive rebound', min_value=0, max_value=40, value=10, key='4') 
             turnover = st.sidebar.slider('Turnover', min_value=0, max_value=30, value=5, key='5')
             free_throw_made = st.sidebar.slider('Free Throw made', min_value=0, max_value=20, value=5, key='6')
-            free_throw_attempted = st.sidebar.slider('Free Throw attempted', min_value=0, max_value=30, value=10, key='7')
+            free_throw_attempted = st.sidebar.slider('Field Goal attempt', min_value=0, max_value=30, value=10, key='7')
 
             st.sidebar.header("Team's opponent")
             opp_field_goal_made = st.sidebar.slider('Field goal made', min_value=0, max_value=100, value=25)
-            opp_field_goal_attempted = st.sidebar.slider('Field goal attempted', min_value=0, max_value=100, value=25)
+            opp_field_goal_attempt = st.sidebar.slider('Field goal attempt', min_value=0, max_value=100, value=25)
             opp_three_pt_made = st.sidebar.slider('3 Point made', min_value=0, max_value=20, value=5)
             opp_off_rebound = st.sidebar.slider('Offensive rebound', min_value=0, max_value=40, value=10)
             opp_def_rebound_opp = st.sidebar.slider('Opponent offensive rebound', min_value=0, max_value=40, value=10) 
             opp_turnover = st.sidebar.slider('Turnover', min_value=0, max_value=30, value=5)
             opp_free_throw_made = st.sidebar.slider('Free Throw made', min_value=0, max_value=20, value=5)
-            opp_free_throw_attempted = st.sidebar.slider('Free Throw attempted', min_value=0, max_value=30, value=10)
+            opp_free_throw_attempt = st.sidebar.slider('Free Throw attempt', min_value=0, max_value=30, value=10)
 
             #Save paramaters in a list to send to the the prediction class
-            team_parameters = [field_goal_made, field_goal_attempted, three_pt_made, off_rebound,
+            team_parameters = [field_goal_made, field_goal_attempt, three_pt_made, off_rebound,
                             opp_def_rebound, turnover, free_throw_made, free_throw_attempted]
 
-            opponent_parameters = [opp_field_goal_made, opp_field_goal_attempted, opp_three_pt_made, opp_off_rebound,
-                                opp_def_rebound_opp, opp_turnover, opp_free_throw_made, opp_free_throw_attempted]
+            opponent_parameters = [opp_field_goal_made, opp_field_goal_attempt, opp_three_pt_made, opp_off_rebound,
+                                opp_def_rebound_opp, opp_turnover, opp_free_throw_made, opp_free_throw_attempt]
 
         elif prediction_option_selected == 'Predict a match' and not detailed_mode:
 
@@ -134,14 +135,14 @@ def setup():
             eFG_rate = st.sidebar.slider('Effective Field Goal Percentage', min_value=0, max_value=100, value=25, key='8') /100
             TOV_rate = st.sidebar.slider('Turnover percentage', min_value=0, max_value=100, value=25, key='9') / 100
             off_rebound_rate = st.sidebar.slider('Offensive rebounding percentage', min_value=0, max_value=100, value=25, key='10') / 100
-            free_throw_rate = st.sidebar.slider('Free Throw percentage', min_value=0, max_value=100, value=25, key='11') / 100
+            free_throw_rate = st.sidebar.slider('Percent of Free Throw Made', min_value=0, max_value=100, value=25, key='11') / 100
 
             st.sidebar.header("Team's opponent")
 
             opp_eFG_rate = st.sidebar.slider('Effective Field Goal Percentage', min_value=0, max_value=100, value=25) / 100
             opp_TOV_rate = st.sidebar.slider('Turnover percentage', min_value=0, max_value=100, value=25) / 100
             opp_off_rebound_rate = st.sidebar.slider('Offensive rebounding percentage', min_value=0, max_value=100, value=25) / 100
-            opp_free_throw_rate = st.sidebar.slider('Free Throw percentage', min_value=0, max_value=100, value=25) / 100
+            opp_free_throw_rate = st.sidebar.slider('Percent of Free Throw Made', min_value=0, max_value=100, value=25) / 100
 
             #Save paramaters in a list to send to the the prediction class
             team_parameters = [eFG_rate, TOV_rate, off_rebound_rate, free_throw_rate]

@@ -24,7 +24,7 @@ class DataAnalysisBoard:
     
     def introduction(self):
         st.write("""
-        Data science is a new weapon in sports and I will show you why! 😎 
+        Data science is a new weapon in sports and I will show you why with this WebApp! 😎 
         """)
         
     def display_dataframe(self):
@@ -84,10 +84,34 @@ class DataAnalysisBoard:
         gc.collect()
 
     def display_distribution(self, density_distribution_group):
-        fig = ff.create_distplot([self.dataframe_sampled[group] for group in density_distribution_group],
-                                  group_labels=density_distribution_group)
 
-        st.plotly_chart(fig)
+        if len(density_distribution_group) > 10:
+            st.warning("More than 10 at the same time won't help you to have a clear analysis!")
+            st.stop()
+
+        figs_col1 = []
+        figs_col2 = []
+
+        col1, space, col2 = st.beta_columns([2, 0.5, 2])
+
+        #
+        for i in range(0, len(density_distribution_group), 2):
+            fig = ff.create_distplot([self.dataframe_sampled[density_distribution_group[i]]],
+                                group_labels=[density_distribution_group[i]])
+            figs_col1.append(fig)
+
+        for i in range(1, len(density_distribution_group), 2):
+            fig = ff.create_distplot([self.dataframe_sampled[density_distribution_group[i]]],
+                                group_labels=[density_distribution_group[i]])
+            figs_col2.append(fig)
+
+        with col1:
+            for fig in figs_col1:
+                st.plotly_chart(fig, use_container_width=True)
+
+        with col2:
+            for fig in figs_col2:
+                st.plotly_chart(fig, use_container_width=True)
 
     def create_four_factor_regplot(self, title, team_column, opponent_column):
 
@@ -122,14 +146,14 @@ class DataAnalysisBoard:
 
         with st.spinner(text='Four Factors processing in progress...'):
             
-            titles = ['Effective Field Goal Percentage', 'Turnover percentage',
+            titles = ['Effective Field Goal percentage', 'Turnover percentage',
                       'Offensive rebounding percentage', 'Percent of Free Throws made']
 
             team_factors = ['Effective Field Goal Percentage', 'Turnover percentage',
-                            'Offensive rebounding percentage', 'Percent of Points (Free Throws)']
+                            'Offensive rebounding percentage', 'Percent of Free Throw Made']
 
             opponent_factors = ['Opponent Effective Field Goal Percentage', 'Opponent Turnover percentage',
-                                'Opponent Offensive rebounding percentage', 'Opponent Percent of Points (Free Throws)']
+                                'Opponent Offensive rebounding percentage', 'Opponent Percent of Free Throw Made']
       
             figs = self.generate_figures(titles, team_factors, opponent_factors)
 
@@ -173,7 +197,7 @@ class DataAnalysisBoard:
         self.display_team_evolution(number_of_team=5)
 
         st.write("---")
-        st.header("Density estimation")
+        st.header("Density distribution")
         self.display_distribution(density_distribution_group)
 
         if show_four_factors:
