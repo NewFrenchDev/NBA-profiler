@@ -147,13 +147,13 @@ class DataAnalysisBoard:
         with st.spinner(text='Four Factors processing in progress...'):
             
             titles = ['Effective Field Goal percentage', 'Turnover percentage',
-                      'Offensive rebounding percentage', 'Percent of Free Throws made']
+                      'Offensive rebounding percentage', 'Free Throw Rate']
 
             team_factors = ['Effective Field Goal Percentage', 'Turnover percentage',
-                            'Offensive rebounding percentage', 'Percent of Free Throw Made']
+                            'Offensive rebounding percentage', 'Free Throw Rate']
 
             opponent_factors = ['Opponent Effective Field Goal Percentage', 'Opponent Turnover percentage',
-                                'Opponent Offensive rebounding percentage', 'Opponent Percent of Free Throw Made']
+                                'Opponent Offensive rebounding percentage', 'Opponent Free Throw Rate']
       
             figs = self.generate_figures(titles, team_factors, opponent_factors)
 
