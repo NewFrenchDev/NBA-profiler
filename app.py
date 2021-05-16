@@ -109,7 +109,7 @@ def setup():
             opp_def_rebound = st.sidebar.slider('Opponent offensive rebound', min_value=0, max_value=40, value=10, key='4') 
             turnover = st.sidebar.slider('Turnover', min_value=0, max_value=30, value=5, key='5')
             free_throw_made = st.sidebar.slider('Free Throw made', min_value=0, max_value=20, value=5, key='6')
-            free_throw_attempted = st.sidebar.slider('Field Goal attempt', min_value=0, max_value=30, value=10, key='7')
+            free_throw_attempted = st.sidebar.slider('Free Throw attempt', min_value=0, max_value=30, value=10, key='7')
 
             st.sidebar.header("Team's opponent")
             opp_field_goal_made = st.sidebar.slider('Field goal made', min_value=0, max_value=100, value=25)
