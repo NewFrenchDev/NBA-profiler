@@ -149,9 +149,9 @@ class Predictions:
 
     def test_prediction_on_dataset_sample(self, model_selected, dataset_sampled):
         columns = ["Effective Field Goal Percentage", "Turnover percentage",
-                   "Offensive rebounding percentage", 'Percent of Free Throw Made',
+                   "Offensive rebounding percentage", 'Free Throw Rate',
                    "Opponent Effective Field Goal Percentage", "Opponent Turnover percentage",
-                   "Opponent Offensive rebounding percentage", "Opponent Percent of Free Throw Made"]
+                   "Opponent Offensive rebounding percentage", "Opponent Free Throw Rate"]
 
         features = dataset_sampled.loc[:, columns]
         features = np.array(features)
