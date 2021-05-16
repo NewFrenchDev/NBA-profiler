@@ -209,11 +209,11 @@ class Predictions:
                 4. Get to the foul line
                 """)
                 st.write(" ")
-                st.markdown('**Each fator in formula:**')
-                st.latex("{Effective Field Goal Percentage} = \\frac{{Field Goal Made} + 0.5 * {3 Points Made}}{Field Goal Attempted}")
-                st.latex("{Turnover Rate} = \\frac{Turnover}{{Field Goal Attempted} + 0.44 * {Free Throw Attempted} + Turnover}")
+                st.markdown('**Each factor in formula:**')
+                st.latex("{Effective Field Goal Percentage} = \\frac{{Field Goal Made} + 0.5 * {3 Points Made}}{Field Goal Attempt}")
+                st.latex("{Turnover Rate} = \\frac{Turnover}{{Field Goal Attempt} + 0.44 * {Free Throw Attempted} + Turnover}")
                 st.latex("{Offensive Rebound Rate} = \\frac{Offensive Rebound}{{Offensive Rebound} + {Opponent Defensive Rebound}}")
-                st.latex("{Free Throw Rate} = \\frac{Free Throw Made}{Field Goal Attempted}")
+                st.latex("{Free Throw Rate} = \\frac{Free Throw Made}{Field Goal Attempt}")
                 st.markdown("""During a game the team is opposing to another team so we need to apply these parameters to the other team. 
                 In sport, you need to analyse and estimate your opponent strengths and weaknesses in order to win!  
                 So in fact, it's **8 factors**!
@@ -222,7 +222,7 @@ class Predictions:
             with st.beta_expander("You don't understand some terms? 👉"):
                st.markdown("""
                **Field Goal Made** is the number of time the team *scored*.\n\n  
-               **Field Goad Attempted** is the number of time the team *failed to score*.\n\n
+               **Field Goad Attempt** is the number of time the team *tried to score*.\n\n
                **3 Points Made** is the number of time the team scored with a 3 points.\n\n  
                **Turnover** is the number of time the team lost the ball before to try to score.\n\n  
                **Offensive Rebound** is the number of time the team get the ball after a rebound after they failed to score. 
@@ -230,6 +230,7 @@ class Predictions:
                **Opponent  Defensive Rebound** is the number of time the opponent team get the ball after a rebound when the team failed to score. 
                The action is disrupted for the team.\n\n
                **Free Throw Made** is the number of point get after the opponent's fault.\n\n  
+               **Free Throw Attempt** is the number of point try during a Free Throw opportunity
                """)
    
 
