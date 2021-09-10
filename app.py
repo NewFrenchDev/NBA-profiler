@@ -73,25 +73,31 @@ def setup():
 
     if select_display == 'Data vizualisation':
 
+        #Team to visualize
+        teams = dataset["Team"].unique().tolist()
+        with st.sidebar.form(key='submit_teams'):
+            teams_selected = st.multiselect('Teams', options=teams, default=['LAL', 'GSW', 'IND', 'BOS'])
+            st.form_submit_button('Update')
+
         #Element to show for density 
         columns_from_dataset = dataset.columns.tolist()[5:]
         with st.sidebar.form(key='submit_group'):
-            density_distribution_group = st.multiselect('Density distribution group:', options=columns_from_dataset,
+            density_distribution_group = st.multiselect('Density distribution group', options=columns_from_dataset,
                                                         default=["Points", "3 Points Made", "Effective Field Goal Percentage", "Turnover"],)
             st.form_submit_button("Show distribution plot 🔥")
 
         show_four_factors = st.sidebar.checkbox('Show Four Factors')
 
-        data_analysis_board.display_view(density_distribution_group, show_four_factors)
+        data_analysis_board.display_view(teams_selected, density_distribution_group, show_four_factors)
 
     elif select_display == 'Match prediction':
-
-        prediction_option_selected = st.sidebar.radio('Prediction options', ['Test models', 'Predict a match'])
 
         #update sidebar
         list_of_model = ['Logistic Regression', 'Decision Tree', 'Random Forest', 'Gradient Boosting',
                          'K Nearest Neighbors', 'AdaBoost', 'Artificial Neural Network']
         model_selected = st.sidebar.selectbox('Select a model: ', options=list_of_model)
+
+        prediction_option_selected = st.sidebar.radio('Prediction options', ['Model\'s information', 'Predict a match'])
 
         if prediction_option_selected == 'Predict a match':
             detailed_mode = st.sidebar.checkbox('Detailed mode')
@@ -132,21 +138,21 @@ def setup():
 
             st.sidebar.header('Team')
 
-            eFG_rate = st.sidebar.slider('Effective Field Goal Percentage', min_value=0, max_value=100, value=25, key='8') /100
-            TOV_rate = st.sidebar.slider('Turnover percentage', min_value=0, max_value=100, value=25, key='9') / 100
+            efg_rate = st.sidebar.slider('Effective Field Goal Percentage', min_value=0, max_value=100, value=25, key='8') /100
+            tov_rate = st.sidebar.slider('Turnover percentage', min_value=0, max_value=100, value=25, key='9') / 100
             off_rebound_rate = st.sidebar.slider('Offensive rebounding percentage', min_value=0, max_value=100, value=25, key='10') / 100
             free_throw_rate = st.sidebar.slider('Percent of Free Throw Made', min_value=0, max_value=100, value=25, key='11') / 100
 
             st.sidebar.header("Team's opponent")
 
-            opp_eFG_rate = st.sidebar.slider('Effective Field Goal Percentage', min_value=0, max_value=100, value=25) / 100
-            opp_TOV_rate = st.sidebar.slider('Turnover percentage', min_value=0, max_value=100, value=25) / 100
+            opp_efg_rate = st.sidebar.slider('Effective Field Goal Percentage', min_value=0, max_value=100, value=25) / 100
+            opp_tov_rate = st.sidebar.slider('Turnover percentage', min_value=0, max_value=100, value=25) / 100
             opp_off_rebound_rate = st.sidebar.slider('Offensive rebounding percentage', min_value=0, max_value=100, value=25) / 100
             opp_free_throw_rate = st.sidebar.slider('Percent of Free Throw Made', min_value=0, max_value=100, value=25) / 100
 
             #Save paramaters in a list to send to the the prediction class
-            team_parameters = [eFG_rate, TOV_rate, off_rebound_rate, free_throw_rate]
-            opponent_parameters = [opp_eFG_rate, opp_TOV_rate, opp_off_rebound_rate, opp_free_throw_rate]
+            team_parameters = [efg_rate, tov_rate, off_rebound_rate, free_throw_rate]
+            opponent_parameters = [opp_efg_rate, opp_tov_rate, opp_off_rebound_rate, opp_free_throw_rate]
 
         
         predictions.display_prediction_view(prediction_option_selected, detailed_mode, model_selected, team_parameters, opponent_parameters)
