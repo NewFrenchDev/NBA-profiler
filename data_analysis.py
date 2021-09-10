@@ -31,19 +31,10 @@ class DataAnalysisBoard:
         st.markdown(f'1000 random games from **{len(self.dataframe)}** over the past 20 years')
         st.dataframe(self.dataframe_sampled)
 
-    def display_team_evolution(self, number_of_team):
-        #Random team selected
-        team_list = self.dataframe_sampled['Team'].unique().tolist()
-
-        random_list_teams = []
-
-        for _ in range(number_of_team):
-            random_team = random.choice(team_list)
-            team_list.remove(random_team)
-            random_list_teams.append(random_team)
+    def display_team_evolution(self, teams):
 
         #Teams selected dataset
-        dataset_teams = self.dataframe.loc[self.dataframe['Team'].isin(random_list_teams)]
+        dataset_teams = self.dataframe.loc[self.dataframe['Team'].isin(teams)]
 
         #Processing
         dataset_teams["Win"] = [0 if result == 'L' else 1 for result in dataset_teams["W/L"]]
@@ -183,7 +174,7 @@ class DataAnalysisBoard:
             st.pyplot(figs[3])
     
 
-    def display_view(self, density_distribution_group, show_four_factors):
+    def display_view(self, teams, density_distribution_group, show_four_factors):
 
         #Check if the dataframe is already in memory
         #If not load the data from file
@@ -194,7 +185,7 @@ class DataAnalysisBoard:
 
         self.display_dataframe()
 
-        self.display_team_evolution(number_of_team=5)
+        self.display_team_evolution(teams)
 
         st.write("---")
         st.header("Density distribution")

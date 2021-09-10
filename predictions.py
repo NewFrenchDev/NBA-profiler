@@ -90,7 +90,7 @@ class Predictions:
         prediction = self.model_loaded.predict_proba(array)
         self.win_rate = np.round(prediction[0][1]*100,2)
         st.write(f"""
-        Predicition:  
+        Prediction:  
         Team has **{self.win_rate}**% to win with these parameters""")
 
         st.write('')
@@ -192,6 +192,10 @@ class Predictions:
 
         self.import_model(model_selected)
 
+        features = ['Effective Field Goal Percentage', 'Turnover percentage', 'Offensive rebounding percentage', 'Free Throw Rate',
+                    'Opponent Effective Field Goal Percentage', 'Opponent Turnover percentage', 'Opponent Offensive rebounding percentage',
+                    'Opponent Free Throw Rate']
+
         #Calculate the four factor if detailed mode selected
         if prediction_option == "Predict a match":
 
@@ -239,7 +243,7 @@ class Predictions:
             self.predict(features)
 
         #Test model on a sample of the dataset
-        elif prediction_option == "Test models":
+        elif prediction_option == "Model\'s information":
             
             st.write(f"**{model_selected}** model is used for this prediction")
 
@@ -250,6 +254,11 @@ class Predictions:
             st.markdown("This sample is chosen randomly each time the app re-run")
             sample = self.dataset.sample(SAMPLE_SIZE)
             st.dataframe(sample)
+
+            features = sample.loc[:, features]
+
+            st.header('Features used for the predictions')
+            st.dataframe(features)
 
             self.test_prediction_on_dataset_sample(model_selected ,sample)
 
